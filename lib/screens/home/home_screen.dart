@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:open_filex/open_filex.dart';
 import '../camera/multi_capture_screen.dart';
 import '../pdf/import_pdf_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
 import '../../services/app_state.dart';
@@ -15,6 +16,13 @@ class HomeScreen extends StatelessWidget {
   Future<void> _pickImages(BuildContext context, ImageSource source) async {
     final picker = ImagePicker();
     final appState = Provider.of<AppState>(context, listen: false);
+
+    // Request permissions
+    if (source == ImageSource.camera) {
+      await Permission.camera.request();
+    } else {
+      await Permission.storage.request();
+    }
     
     if (source == ImageSource.camera) {
       if (context.mounted) {
