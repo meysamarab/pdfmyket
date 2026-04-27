@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:open_file_plus/open_file_plus.dart';
+import 'package:open_filex/open_filex.dart';
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
 
@@ -161,7 +161,7 @@ class ResultScreen extends StatelessWidget {
               childAspectRatio: 1.5,
               children: [
                 _buildActionCard(Icons.open_in_new, 'مشاهده فایل', onTap: () {
-                  OpenFile.open(fileItem.path);
+                  OpenFilex.open(fileItem.path);
                 }),
                 _buildActionCard(Icons.print, 'چاپ', onTap: () {}),
                 _buildActionCard(Icons.drive_file_rename_outline, 'تغییر نام', onTap: () {}),

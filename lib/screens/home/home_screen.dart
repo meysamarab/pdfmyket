@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:open_file_plus/open_file_plus.dart';
+import 'package:open_filex/open_filex.dart';
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
 import '../../services/app_state.dart';
@@ -250,7 +250,7 @@ class HomeScreen extends StatelessWidget {
                 trailing: IconButton(
                   icon: const Icon(Icons.open_in_new),
                   onPressed: () {
-                    OpenFile.open(file.path);
+                    OpenFilex.open(file.path);
                   },
                 ),
               );
