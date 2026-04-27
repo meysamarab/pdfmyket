@@ -1,8 +1,32 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/app_colors.dart';
+import 'select_pages_screen.dart';
 
-class ImportPdfScreen extends StatelessWidget {
+class ImportPdfScreen extends StatefulWidget {
   const ImportPdfScreen({super.key});
+
+  @override
+  State<ImportPdfScreen> createState() => _ImportPdfScreenState();
+}
+
+class _ImportPdfScreenState extends State<ImportPdfScreen> {
+  Future<void> _pickPdf() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null && result.files.single.path != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SelectPagesScreen(pdfPath: result.files.single.path!),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +41,6 @@ class ImportPdfScreen extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: AppColors.primary),
-            onPressed: () {},
-          ),
-        ],
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.white,
@@ -39,63 +57,62 @@ class ImportPdfScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Upload Area
             InkWell(
-              onTap: () {},
+              onTap: _pickPdf,
               borderRadius: BorderRadius.circular(24),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.all(40),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppColors.outlineVariant.withOpacity(0.6),
+                    color: AppColors.primary.withOpacity(0.3),
                     width: 2,
-                    style: BorderStyle.solid, // Flutter doesn't support dashed border out of the box easily
                   ),
                 ),
                 child: Column(
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryContainer,
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryContainer.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.upload_file,
-                        color: AppColors.onPrimaryContainer,
-                        size: 32,
+                        color: AppColors.primary,
+                        size: 40,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     const Text(
-                      'وارد کردن از فایل‌ها',
+                      'انتخاب فایل پی‌دی‌اف',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         color: AppColors.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     const Text(
-                      'برای انتخاب فایل پی‌دی‌اف ضربه بزنید',
+                      'فایل خود را از حافظه دستگاه انتخاب کنید',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: AppColors.onSurfaceVariant,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: _pickPdf,
                       icon: const Icon(Icons.folder_open, size: 20),
-                      label: const Text('انتخاب فایل'),
+                      label: const Text('جستجوی فایل'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size(180, 50),
+                        minimumSize: const Size(200, 56),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -106,77 +123,32 @@ class ImportPdfScreen extends StatelessWidget {
               ),
             ),
             
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
             
-            // Recent PDFs
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'پی‌دی‌اف‌های اخیر',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'مشاهده همه',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-              ],
+            const Text(
+              'نکات راهنما',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildRecentPdfList(context),
+            _buildTipItem(Icons.check_circle_outline, 'فایل‌های پی‌دی‌اف متنی و تصویری پشتیبانی می‌شوند.'),
+            _buildTipItem(Icons.check_circle_outline, 'می‌توانید صفحات مورد نظر را جداگانه انتخاب کنید.'),
+            _buildTipItem(Icons.check_circle_outline, 'خروجی به صورت تصاویر با کیفیت در گالری ذخیره می‌شود.'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRecentPdfList(BuildContext context) {
-    final List<Map<String, String>> recentPdfs = [
-      {'name': 'Q4_Financial_Report_Final.pdf', 'info': '2.4 MB • امروز، 10:42'},
-      {'name': 'Signed_Contract_AcmeCorp.pdf', 'info': '856 KB • دیروز'},
-      {'name': 'Design_System_Guidelines_v2.pdf', 'info': '5.1 MB • 12 اکتبر'},
-    ];
-
-    return Column(
-      children: recentPdfs.map((pdf) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(12),
-            leading: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.picture_as_pdf, color: AppColors.error),
-            ),
-            title: Text(
-              pdf['name']!,
-              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              pdf['info']!,
-              style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
-            ),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
-            onTap: () {},
-          ),
-        );
-      }).toList(),
+  Widget _buildTipItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.secondary),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: const TextStyle(color: AppColors.onSurfaceVariant))),
+        ],
+      ),
     );
   }
 }

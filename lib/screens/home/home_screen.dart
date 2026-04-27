@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:open_filex/open_filex.dart';
+import '../camera/multi_capture_screen.dart';
+import '../pdf/import_pdf_screen.dart';
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
 import '../../services/app_state.dart';
@@ -15,10 +17,14 @@ class HomeScreen extends StatelessWidget {
     final appState = Provider.of<AppState>(context, listen: false);
     
     if (source == ImageSource.camera) {
-      final XFile? photo = await picker.pickImage(source: ImageSource.camera);
-      if (photo != null) {
-        appState.addImages([photo.path]);
-        if (context.mounted) {
+      if (context.mounted) {
+        final List<String>? result = await Navigator.push<List<String>>(
+          context,
+          MaterialPageRoute(builder: (context) => const MultiCaptureScreen()),
+        );
+        
+        if (result != null && result.isNotEmpty && context.mounted) {
+          appState.addImages(result);
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const ReorderPagesScreen()),
@@ -43,10 +49,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () {},
-        ),
+        leading: null,
         title: Text(
           'تصویر به پی‌دی‌اف', // Image to PDF
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -98,7 +101,12 @@ class HomeScreen extends StatelessWidget {
               title: 'پی‌دی‌اف به تصویر',
               icon: Icons.picture_as_pdf,
               isPrimary: false,
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ImportPdfScreen()),
+                );
+              },
             ),
             const SizedBox(height: 32),
             Row(
@@ -112,7 +120,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Provider.of<AppState>(context, listen: false).setTabIndex(1);
+                  },
                   child: const Text(
                     'مشاهده همه',
                     style: TextStyle(color: AppColors.primary),

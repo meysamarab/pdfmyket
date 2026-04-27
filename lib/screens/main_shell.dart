@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home/home_screen.dart';
+import 'history/history_screen.dart';
+import 'settings/settings_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -9,24 +11,12 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  int _selectedIndex = 0;
-
-  static const List<Widget> _screens = [
-    HomeScreen(),
-    Center(child: Text('History')),
-    Center(child: Text('Settings')),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+    
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: _screens[appState.currentTabIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -40,19 +30,19 @@ class _MainShellState extends State<MainShell> {
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(Icons.swap_calls),
-              label: 'تبدیل', // Convert
+              label: 'تبدیل',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.history),
-              label: 'تاریخچه', // History
+              label: 'تاریخچه',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings),
-              label: 'تنظیمات', // Settings
+              label: 'تنظیمات',
             ),
           ],
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
+          currentIndex: appState.currentTabIndex,
+          onTap: (index) => appState.setTabIndex(index),
           elevation: 0,
         ),
       ),
