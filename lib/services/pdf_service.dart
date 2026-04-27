@@ -73,6 +73,7 @@ class PdfService {
         width: page.width * 2,
         height: page.height * 2,
         format: pdfx.PdfPageImageFormat.png,
+        backgroundColor: '#ffffff',
       );
       await page.close();
 
@@ -98,6 +99,7 @@ class PdfService {
         width: page.width * 2,
         height: page.height * 2,
         format: pdfx.PdfPageImageFormat.png,
+        backgroundColor: '#ffffff',
       );
       await page.close();
 
