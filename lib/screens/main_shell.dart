@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'home/home_screen.dart';
 import 'history/history_screen.dart';
 import 'settings/settings_screen.dart';
+import '../services/app_state.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -11,6 +13,12 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
+  static const List<Widget> _screens = [
+    HomeScreen(),
+    HistoryScreen(),
+    SettingsScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
