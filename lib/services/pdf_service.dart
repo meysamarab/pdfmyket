@@ -109,22 +109,16 @@ class PdfService {
       );
       
       if (pageImage != null) {
-        // Convert to image object to add watermark
-        final bytes = pageImage.pixels; // This is RGBA
-        
-        // pdfrx pixels are often BGRA or RGBA. Let's use the helper if available or convert.
-        // Actually, pdfrx has a simple way to get PNG bytes sometimes, but let's use the pixels directly.
-        // We'll use the image package to create an image from pixels.
+        final Uint8List bytes = pageImage.pixels;
         
         final imgObj = img.Image.fromBytes(
           width: pageImage.width,
           height: pageImage.height,
-          bytes: bytes.buffer,
+          bytes: bytes,
           numChannels: 4,
           format: img.Format.uint8,
         );
 
-        // Add watermark text to image
         img.drawString(
           imgObj,
           watermarkText,
@@ -159,11 +153,11 @@ class PdfService {
       );
 
       if (pageImage != null) {
-        // For preview, we don't necessarily need the watermark, but we can add it
+        final Uint8List bytes = pageImage.pixels;
         final imgObj = img.Image.fromBytes(
           width: pageImage.width,
           height: pageImage.height,
-          bytes: pageImage.pixels.buffer,
+          bytes: bytes,
           numChannels: 4,
           format: img.Format.uint8,
         );
