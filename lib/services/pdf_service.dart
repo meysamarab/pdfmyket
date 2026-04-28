@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path/path.dart' as p;
-import 'package:pdfx/pdfx.dart' as pdfx;
+import 'package:printing/printing.dart';
 import 'file_storage_service.dart';
 
 class PdfService {
@@ -59,56 +59,35 @@ class PdfService {
     return files;
   }
 
-  /// Convert PDF pages to images using pdfx
+  /// Convert PDF pages to images using printing package (more robust)
   static Future<List<File>> pdfToImages(String pdfPath) async {
     final dir = await FileStorageService.getCCPdfDirectory();
-    final document = await pdfx.PdfDocument.openFile(pdfPath);
+    final bytes = await File(pdfPath).readAsBytes();
     final List<File> imageFiles = [];
-
     final baseName = p.basenameWithoutExtension(pdfPath);
 
-    for (int i = 1; i <= document.pagesCount; i++) {
-      final page = await document.getPage(i);
-      final pageImage = await page.render(
-        width: page.width * 2,
-        height: page.height * 2,
-        format: pdfx.PdfPageImageFormat.png,
-        backgroundColor: '#ffffff',
-      );
-      await page.close();
-
-      if (pageImage != null) {
-        final file = File(p.join(dir.path, '${baseName}_page_$i.png'));
-        await file.writeAsBytes(pageImage.bytes);
-        imageFiles.add(file);
-      }
+    int i = 1;
+    await for (final page in Printing.raster(bytes, dpi: 300)) {
+      final pngBytes = await page.toPng();
+      final file = File(p.join(dir.path, '${baseName}_page_$i.png'));
+      await file.writeAsBytes(pngBytes);
+      imageFiles.add(file);
+      i++;
     }
 
-    await document.close();
     return imageFiles;
   }
 
-  /// Render PDF pages as image bytes for preview (not saving to disk)
+  /// Render PDF pages as image bytes for preview (using printing package)
   static Future<List<Uint8List>> renderPdfPages(String pdfPath) async {
-    final document = await pdfx.PdfDocument.openFile(pdfPath);
+    final bytes = await File(pdfPath).readAsBytes();
     final List<Uint8List> pages = [];
 
-    for (int i = 1; i <= document.pagesCount; i++) {
-      final page = await document.getPage(i);
-      final pageImage = await page.render(
-        width: page.width * 2,
-        height: page.height * 2,
-        format: pdfx.PdfPageImageFormat.png,
-        backgroundColor: '#ffffff',
-      );
-      await page.close();
-
-      if (pageImage != null) {
-        pages.add(Uint8List.fromList(pageImage.bytes));
-      }
+    await for (final page in Printing.raster(bytes, dpi: 150)) {
+      final pngBytes = await page.toPng();
+      pages.add(Uint8List.fromList(pngBytes));
     }
 
-    await document.close();
     return pages;
   }
 }
