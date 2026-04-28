@@ -3,11 +3,29 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path/path.dart' as p;
-import 'package:printing/printing.dart';
+import 'package:pdfrx/pdfrx.dart' as pdfrx;
+import 'package:image/image.dart' as img;
 import 'file_storage_service.dart';
 
 class PdfService {
-  /// Convert multiple images into a single multi-page PDF
+  static const String watermarkText = 'CCPdf';
+
+  /// Add a small watermark at the bottom of a PDF page
+  static pw.Widget _buildWatermark() {
+    return pw.Container(
+      alignment: pw.Alignment.bottomRight,
+      padding: const pw.EdgeInsets.only(bottom: 10, right: 20),
+      child: pw.Text(
+        watermarkText,
+        style: pw.TextStyle(
+          fontSize: 10,
+          color: PdfColors.grey400,
+        ),
+      ),
+    );
+  }
+
+  /// Convert multiple images into a single multi-page PDF with watermark
   static Future<File> imagesToPdf(List<String> imagePaths, String fileName) async {
     final pdf = pw.Document();
 
@@ -17,8 +35,16 @@ class PdfService {
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
-            return pw.Center(
-              child: pw.Image(image, fit: pw.BoxFit.contain),
+            return pw.Stack(
+              children: [
+                pw.Center(
+                  child: pw.Image(image, fit: pw.BoxFit.contain),
+                ),
+                pw.Align(
+                  alignment: pw.Alignment.bottomCenter,
+                  child: _buildWatermark(),
+                ),
+              ],
             );
           },
         ),
@@ -31,7 +57,7 @@ class PdfService {
     return file;
   }
 
-  /// Convert each image into a separate single-page PDF
+  /// Convert each image into a separate single-page PDF with watermark
   static Future<List<File>> imagesToSeparatePdfs(List<String> imagePaths, String baseName) async {
     final dir = await FileStorageService.getCCPdfDirectory();
     final List<File> files = [];
@@ -44,8 +70,16 @@ class PdfService {
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
-            return pw.Center(
-              child: pw.Image(image, fit: pw.BoxFit.contain),
+            return pw.Stack(
+              children: [
+                pw.Center(
+                  child: pw.Image(image, fit: pw.BoxFit.contain),
+                ),
+                pw.Align(
+                  alignment: pw.Alignment.bottomCenter,
+                  child: _buildWatermark(),
+                ),
+              ],
             );
           },
         ),
@@ -59,35 +93,87 @@ class PdfService {
     return files;
   }
 
-  /// Convert PDF pages to images using printing package (more robust)
+  /// Convert PDF pages to images using pdfrx and add watermark
   static Future<List<File>> pdfToImages(String pdfPath) async {
     final dir = await FileStorageService.getCCPdfDirectory();
-    final bytes = await File(pdfPath).readAsBytes();
+    final document = await pdfrx.PdfDocument.openFile(pdfPath);
     final List<File> imageFiles = [];
     final baseName = p.basenameWithoutExtension(pdfPath);
 
-    int i = 1;
-    await for (final page in Printing.raster(bytes, dpi: 300)) {
-      final pngBytes = await page.toPng();
-      final file = File(p.join(dir.path, '${baseName}_page_$i.png'));
-      await file.writeAsBytes(pngBytes);
-      imageFiles.add(file);
-      i++;
+    for (int i = 1; i <= document.pagesCount; i++) {
+      final page = await document.getPage(i);
+      final pageImage = await page.render(
+        fullWidth: page.width * 2,
+        fullHeight: page.height * 2,
+        backgroundColor: '#ffffff',
+      );
+      
+      if (pageImage != null) {
+        // Convert to image object to add watermark
+        final bytes = pageImage.pixels; // This is RGBA
+        
+        // pdfrx pixels are often BGRA or RGBA. Let's use the helper if available or convert.
+        // Actually, pdfrx has a simple way to get PNG bytes sometimes, but let's use the pixels directly.
+        // We'll use the image package to create an image from pixels.
+        
+        final imgObj = img.Image.fromBytes(
+          width: pageImage.width,
+          height: pageImage.height,
+          bytes: bytes.buffer,
+          numChannels: 4,
+          format: img.Format.uint8,
+        );
+
+        // Add watermark text to image
+        img.drawString(
+          imgObj,
+          watermarkText,
+          font: img.arial24,
+          x: imgObj.width - 100,
+          y: imgObj.height - 40,
+          color: img.ColorRgb8(150, 150, 150),
+        );
+
+        final pngBytes = img.encodePng(imgObj);
+        final file = File(p.join(dir.path, '${baseName}_page_$i.png'));
+        await file.writeAsBytes(pngBytes);
+        imageFiles.add(file);
+      }
     }
 
+    await document.close();
     return imageFiles;
   }
 
-  /// Render PDF pages as image bytes for preview (using printing package)
+  /// Render PDF pages as image bytes for preview (using pdfrx)
   static Future<List<Uint8List>> renderPdfPages(String pdfPath) async {
-    final bytes = await File(pdfPath).readAsBytes();
+    final document = await pdfrx.PdfDocument.openFile(pdfPath);
     final List<Uint8List> pages = [];
 
-    await for (final page in Printing.raster(bytes, dpi: 150)) {
-      final pngBytes = await page.toPng();
-      pages.add(Uint8List.fromList(pngBytes));
+    for (int i = 1; i <= document.pagesCount; i++) {
+      final page = await document.getPage(i);
+      final pageImage = await page.render(
+        fullWidth: page.width,
+        fullHeight: page.height,
+        backgroundColor: '#ffffff',
+      );
+
+      if (pageImage != null) {
+        // For preview, we don't necessarily need the watermark, but we can add it
+        final imgObj = img.Image.fromBytes(
+          width: pageImage.width,
+          height: pageImage.height,
+          bytes: pageImage.pixels.buffer,
+          numChannels: 4,
+          format: img.Format.uint8,
+        );
+        
+        final pngBytes = img.encodePng(imgObj);
+        pages.add(Uint8List.fromList(pngBytes));
+      }
     }
 
+    await document.close();
     return pages;
   }
 }
