@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart' as fp;
 import 'package:path/path.dart' as p;
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
@@ -108,7 +108,7 @@ class ResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${fileItem.sizeString} • ${fileItem.type == FileType.pdf ? "PDF" : "Image"}',
+                    '${fileItem.sizeString} • ${fileItem.type == AppFileType.pdf ? "PDF" : "Image"}',
                     style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
                   ),
                 ],
@@ -168,7 +168,7 @@ class ResultScreen extends StatelessWidget {
                 }),
                 _buildActionCard(Icons.save_alt, 'ذخیره در...', onTap: () async {
                   try {
-                    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+                    String? selectedDirectory = await fp.FilePicker.platform.getDirectoryPath();
                     if (selectedDirectory != null) {
                       final File sourceFile = File(fileItem.path);
                       final String destPath = p.join(selectedDirectory, fileItem.name);

@@ -110,7 +110,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildFileCard(BuildContext context, FileItem file, AppState appState) {
-    final isPdf = file.type == FileType.pdf;
+    final isPdf = file.type == AppFileType.pdf;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

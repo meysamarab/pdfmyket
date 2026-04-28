@@ -246,12 +246,12 @@ class HomeScreen extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: file.type == FileType.pdf ? const Color(0xFFFFEBEE) : const Color(0xFFE3F2FD),
+                    color: file.type == AppFileType.pdf ? const Color(0xFFFFEBEE) : const Color(0xFFE3F2FD),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    file.type == FileType.pdf ? Icons.picture_as_pdf : Icons.image,
-                    color: file.type == FileType.pdf ? const Color(0xFFD32F2F) : const Color(0xFF1976D2),
+                    file.type == AppFileType.pdf ? Icons.picture_as_pdf : Icons.image,
+                    color: file.type == AppFileType.pdf ? const Color(0xFFD32F2F) : const Color(0xFF1976D2),
                   ),
                 ),
                 title: Text(

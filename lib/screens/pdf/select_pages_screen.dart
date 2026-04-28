@@ -74,7 +74,7 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
           path: file.path,
           size: await file.length(),
           createdAt: DateTime.now(),
-          type: FileType.image,
+          type: AppFileType.image,
         );
         appState.addRecentFile(lastItem);
       }

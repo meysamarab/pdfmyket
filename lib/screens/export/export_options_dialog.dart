@@ -38,7 +38,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
           path: file.path,
           size: await file.length(),
           createdAt: DateTime.now(),
-          type: FileType.pdf,
+          type: AppFileType.pdf,
         );
 
         appState.addRecentFile(fileItem);
@@ -62,7 +62,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
             path: file.path,
             size: await file.length(),
             createdAt: DateTime.now(),
-            type: FileType.pdf,
+            type: AppFileType.pdf,
           );
           appState.addRecentFile(lastItem);
         }

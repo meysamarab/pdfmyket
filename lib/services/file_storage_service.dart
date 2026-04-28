@@ -97,7 +97,7 @@ class FileStorageService {
             path: entity.path,
             size: stat.size,
             createdAt: stat.modified,
-            type: ext == '.pdf' ? FileType.pdf : FileType.image,
+            type: ext == '.pdf' ? AppFileType.pdf : AppFileType.image,
           ));
         }
       }

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-enum FileType { pdf, image }
+enum AppFileType { pdf, image }
 
 class FileItem {
   final String id;
@@ -8,7 +8,7 @@ class FileItem {
   final String path;
   final int size;
   final DateTime createdAt;
-  final FileType type;
+  final AppFileType type;
 
   FileItem({
     required this.id,
