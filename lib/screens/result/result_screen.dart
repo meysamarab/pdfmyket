@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
 
@@ -135,7 +138,7 @@ class ResultScreen extends StatelessWidget {
             // Share Button
             ElevatedButton.icon(
               onPressed: () {
-                Share.shareXFiles([XFile(fileItem.path)], text: 'Check out my PDF!');
+                Share.shareXFiles([XFile(fileItem.path)], text: 'Check out my file!');
               },
               icon: const Icon(Icons.share, size: 20),
               label: const Text('اشتراک‌گذاری فایل'),
@@ -158,12 +161,35 @@ class ResultScreen extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
+              childAspectRatio: 1.3,
               children: [
                 _buildActionCard(Icons.open_in_new, 'مشاهده فایل', onTap: () {
                   OpenFilex.open(fileItem.path);
                 }),
-                _buildActionCard(Icons.print, 'چاپ', onTap: () {}),
+                _buildActionCard(Icons.save_alt, 'ذخیره در...', onTap: () async {
+                  try {
+                    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+                    if (selectedDirectory != null) {
+                      final File sourceFile = File(fileItem.path);
+                      final String destPath = p.join(selectedDirectory, fileItem.name);
+                      await sourceFile.copy(destPath);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('فایل در پوشه مورد نظر ذخیره شد')),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('خطا در ذخیره‌سازی: $e')),
+                      );
+                    }
+                  }
+                }),
+                _buildActionCard(Icons.print, 'چاپ', onTap: () {
+                  // Print logic could be added here
+                }),
                 _buildActionCard(Icons.drive_file_rename_outline, 'تغییر نام', onTap: () {}),
                 _buildActionCard(Icons.delete, 'حذف', isError: true, onTap: () {}),
               ],
@@ -177,6 +203,7 @@ class ResultScreen extends StatelessWidget {
   Widget _buildActionCard(IconData icon, String label, {bool isError = false, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: isError ? AppColors.error.withOpacity(0.05) : AppColors.surfaceContainerLowest,

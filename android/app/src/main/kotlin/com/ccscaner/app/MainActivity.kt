@@ -1,4 +1,4 @@
-package com.example.stitch_swift_pdf
+package com.ccscaner.app
 
 import io.flutter.embedding.android.FlutterActivity
 

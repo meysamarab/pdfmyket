@@ -128,7 +128,7 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () {
                   showLicensePage(
                     context: context,
-                    applicationName: 'StitchSwift PDF',
+                    applicationName: 'CCScaner',
                     applicationVersion: '1.0.0',
                   );
                 },
@@ -156,7 +156,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'CCPdf',
+                    'CCScaner',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,

@@ -8,7 +8,7 @@ import 'package:image/image.dart' as img;
 import 'file_storage_service.dart';
 
 class PdfService {
-  static const String watermarkText = 'Created by StitchSwift PDF';
+  static const String watermarkText = 'Created by CCScaner';
 
   /// Convert multiple images into a single multi-page PDF with watermark
   static Future<File> imagesToPdf(List<String> imagePaths, String fileName) async {
@@ -32,7 +32,7 @@ class PdfService {
                     watermarkText,
                     style: pw.TextStyle(
                       color: PdfColors.grey400,
-                      fontSize: 12,
+                      fontSize: 18,
                     ),
                   ),
                 ),
@@ -74,7 +74,7 @@ class PdfService {
                     watermarkText,
                     style: pw.TextStyle(
                       color: PdfColors.grey400,
-                      fontSize: 12,
+                      fontSize: 18,
                     ),
                   ),
                 ),
@@ -120,15 +120,14 @@ class PdfService {
     final image = img.decodeImage(imageBytes);
     if (image == null) return imageBytes;
 
-    // Use a built-in font from the image package
-    // Note: in newer image package versions, we use drawString
+    // Use a larger font for images
     img.drawString(
       image,
       watermarkText,
-      font: img.arial24,
-      x: image.width - 250,
-      y: image.height - 40,
-      color: img.ColorRgba8(150, 150, 150, 150), // Semi-transparent grey
+      font: img.arial48,
+      x: image.width - 450,
+      y: image.height - 80,
+      color: img.ColorRgba8(150, 150, 150, 180),
     );
 
     return Uint8List.fromList(img.encodePng(image));
