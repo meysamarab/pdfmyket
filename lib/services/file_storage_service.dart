@@ -7,41 +7,36 @@ import '../models/file_item.dart';
 class FileStorageService {
   static const String _folderName = 'CCPdf';
 
-  /// Request necessary permissions
+  /// Request necessary permissions including Manage External Storage for root access
   static Future<bool> requestPermissions() async {
     if (Platform.isAndroid) {
-      final status = await Permission.storage.request();
-      // For Android 13+ (API 33), we might need photos/videos permissions, 
-      // but for general storage, 'storage' is still used in many plugins.
-      // However, Scoped Storage is the real issue.
-      
-      if (status.isGranted) return true;
-      
-      // Try MANAGE_EXTERNAL_STORAGE for Android 11+ if regular storage is denied
-      if (await Permission.manageExternalStorage.request().isGranted) {
-        return true;
+      // For Android 11+, we need Manage External Storage to write to root
+      if (await Permission.manageExternalStorage.isDenied) {
+        await Permission.manageExternalStorage.request();
       }
       
-      return false;
+      final status = await Permission.manageExternalStorage.status;
+      if (status.isGranted) return true;
+
+      // Fallback to regular storage for older versions
+      final storageStatus = await Permission.storage.request();
+      return storageStatus.isGranted;
     }
     return true;
   }
 
-  /// Get or create the CCPdf directory
+  /// Get or create the CCPdf directory in the device root (public storage)
   static Future<Directory> getCCPdfDirectory() async {
     Directory? baseDir;
     
     if (Platform.isAndroid) {
-      // Try to get public external storage first
-      try {
-        // On Android 11+, this will fail to create at root without MANAGE_EXTERNAL_STORAGE
-        // So we fallback to app-specific external storage which is always granted
-        final extDirs = await getExternalStorageDirectories(type: StorageDirectory.documents);
-        if (extDirs != null && extDirs.isNotEmpty) {
-          baseDir = extDirs.first;
-        }
-      } catch (e) {
-        baseDir = await getApplicationDocumentsDirectory();
+      // This path is the "Root" of the internal storage accessible by user
+      baseDir = Directory('/storage/emulated/0');
+      
+      // Verify if we can write to it, otherwise fallback
+      if (!await baseDir.exists()) {
+        final extDir = await getExternalStorageDirectory();
+        baseDir = extDir;
       }
     } else {
       baseDir = await getApplicationDocumentsDirectory();
@@ -49,10 +44,20 @@ class FileStorageService {
 
     baseDir ??= await getApplicationDocumentsDirectory();
 
-    // Create the CCPdf folder inside the base directory
+    // Create the CCPdf folder in the root
     final ccPdfDir = Directory(p.join(baseDir.path, _folderName));
     if (!await ccPdfDir.exists()) {
-      await ccPdfDir.create(recursive: true);
+      try {
+        await ccPdfDir.create(recursive: true);
+      } catch (e) {
+        // Final fallback to documents if root creation fails
+        final docDir = await getApplicationDocumentsDirectory();
+        final fallbackDir = Directory(p.join(docDir.path, _folderName));
+        if (!await fallbackDir.exists()) {
+          await fallbackDir.create(recursive: true);
+        }
+        return fallbackDir;
+      }
     }
     return ccPdfDir;
   }
