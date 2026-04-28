@@ -168,6 +168,17 @@ class ResultScreen extends StatelessWidget {
                 }),
                 _buildActionCard(Icons.save_alt, 'ذخیره در...', onTap: () async {
                   try {
+                    // Check and request permissions first
+                    final hasPermission = await FileStorageService.requestPermissions();
+                    if (!hasPermission) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('برای ذخیره در پوشه دلخواه، دسترسی به فایل‌ها لازم است')),
+                        );
+                      }
+                      return;
+                    }
+
                     String? selectedDirectory = await fp.FilePicker.platform.getDirectoryPath();
                     if (selectedDirectory != null) {
                       final File sourceFile = File(fileItem.path);
@@ -182,7 +193,7 @@ class ResultScreen extends StatelessWidget {
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('خطا در ذخیره‌سازی: $e')),
+                        SnackBar(content: Text('خطا در ذخیره‌سازی: $e (نیاز به تایید دسترسی در تنظیمات اندروید)')),
                       );
                     }
                   }

@@ -10,17 +10,23 @@ class FileStorageService {
   /// Request necessary permissions including Manage External Storage for root access
   static Future<bool> requestPermissions() async {
     if (Platform.isAndroid) {
-      // For Android 11+, we need Manage External Storage to write to root
-      if (await Permission.manageExternalStorage.isDenied) {
-        await Permission.manageExternalStorage.request();
-      }
+      // Check if we already have it
+      if (await Permission.manageExternalStorage.isGranted) return true;
+
+      // Request it (this will open system settings on Android 11+)
+      final status = await Permission.manageExternalStorage.request();
       
-      final status = await Permission.manageExternalStorage.status;
       if (status.isGranted) return true;
 
-      // Fallback to regular storage for older versions
-      final storageStatus = await Permission.storage.request();
-      return storageStatus.isGranted;
+      // If permanently denied, user needs to manually enable it in app settings
+      if (status.isPermanentlyDenied) {
+        await openAppSettings();
+      }
+      
+      // Fallback for older Android versions
+      if (await Permission.storage.request().isGranted) return true;
+      
+      return false;
     }
     return true;
   }
