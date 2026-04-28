@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:file_picker/file_picker.dart' as fp;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as p;
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
@@ -169,22 +170,44 @@ class ResultScreen extends StatelessWidget {
                 }),
                 _buildActionCard(Icons.save_alt, 'ذخیره در...', onTap: () async {
                   try {
-                    // Check and request permissions first
-                    final hasPermission = await FileStorageService.requestPermissions();
-                    if (!hasPermission) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('برای ذخیره در پوشه دلخواه، دسترسی به فایل‌ها لازم است')),
-                        );
+                    // Check if we have permission first
+                    if (Platform.isAndroid) {
+                      final status = await Permission.manageExternalStorage.status;
+                      if (!status.isGranted) {
+                        // Show a dialog explaining why we need this
+                        if (context.mounted) {
+                          bool? proceed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('دسترسی به فایل‌ها'),
+                              content: const Text(
+                                'برای ذخیره فایل در پوشه دلخواه، باید دسترسی "مدیریت تمام فایل‌ها" را در صفحه بعدی فعال کنید.',
+                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('انصراف')),
+                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('تایید و رفتن به تنظیمات')),
+                              ],
+                            ),
+                          );
+                          
+                          if (proceed != true) return;
+                        }
+                        
+                        // Request permission
+                        final result = await Permission.manageExternalStorage.request();
+                        if (!result.isGranted) return;
                       }
-                      return;
                     }
 
                     String? selectedDirectory = await fp.FilePicker.platform.getDirectoryPath();
                     if (selectedDirectory != null) {
                       final File sourceFile = File(fileItem.path);
                       final String destPath = p.join(selectedDirectory, fileItem.name);
+                      
+                      // Perform copy
                       await sourceFile.copy(destPath);
+                      
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('فایل در پوشه مورد نظر ذخیره شد')),
@@ -194,7 +217,7 @@ class ResultScreen extends StatelessWidget {
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('خطا در ذخیره‌سازی: $e (نیاز به تایید دسترسی در تنظیمات اندروید)')),
+                        SnackBar(content: Text('خطا در ذخیره‌سازی: $e (مطمئن شوید دسترسی مدیریت فایل را فعال کرده‌اید)')),
                       );
                     }
                   }
