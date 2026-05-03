@@ -1,12 +1,158 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:provider/provider.dart';
+
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
+import '../../services/app_state.dart';
 
-class ResultScreen extends StatelessWidget {
+class ResultScreen extends StatefulWidget {
   final FileItem fileItem;
   const ResultScreen({super.key, required this.fileItem});
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  late FileItem currentFileItem;
+  late TextEditingController _nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    currentFileItem = widget.fileItem;
+    _nameController = TextEditingController(text: currentFileItem.name);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _renameTo(String newName) async {
+    if (newName.isEmpty || newName == currentFileItem.name) return;
+    try {
+      final file = File(currentFileItem.path);
+      final dir = file.parent;
+      final ext = currentFileItem.type == AppFileType.pdf ? '.pdf' : '.jpg';
+      final finalName = newName.toLowerCase().endsWith(ext) ? newName : '$newName$ext';
+      final newPath = '${dir.path}/$finalName';
+      
+      final renamedFile = await file.rename(newPath);
+      
+      setState(() {
+        currentFileItem = FileItem(
+          id: currentFileItem.id,
+          name: finalName,
+          path: renamedFile.path,
+          size: currentFileItem.size,
+          createdAt: currentFileItem.createdAt,
+          type: currentFileItem.type,
+        );
+        _nameController.text = finalName;
+      });
+      if (mounted) {
+        Provider.of<AppState>(context, listen: false).loadRecentFiles();
+      }
+    } catch (e) {
+      debugPrint('Rename error: $e');
+    }
+  }
+
+  void _showRenameDialog() {
+    final TextEditingController dialogController = TextEditingController(text: currentFileItem.name);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('تغییر نام فایل', textAlign: TextAlign.right),
+          content: TextField(
+            controller: dialogController,
+            decoration: const InputDecoration(labelText: 'نام جدید'),
+            autofocus: true,
+            textAlign: TextAlign.right,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('لغو'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _renameTo(dialogController.text);
+              },
+              child: const Text('ذخیره'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _printFile() async {
+    try {
+      if (currentFileItem.type == AppFileType.pdf) {
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => File(currentFileItem.path).readAsBytesSync(),
+        );
+      } else {
+        final doc = pw.Document();
+        final image = pw.MemoryImage(File(currentFileItem.path).readAsBytesSync());
+        doc.addPage(
+          pw.Page(
+            build: (pw.Context context) => pw.Center(child: pw.Image(image)),
+          ),
+        );
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => doc.save(),
+        );
+      }
+    } catch (e) {
+      debugPrint('Print error: $e');
+    }
+  }
+
+  void _showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('حذف فایل', textAlign: TextAlign.right),
+        content: const Text('آیا از حذف این فایل مطمئن هستید؟', textAlign: TextAlign.right),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('لغو'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                final file = File(currentFileItem.path);
+                if (await file.exists()) {
+                  await file.delete();
+                }
+                if (mounted) {
+                  Provider.of<AppState>(context, listen: false).loadRecentFiles();
+                  Navigator.pop(context); // close dialog
+                  Navigator.popUntil(context, (route) => route.isFirst); // go back to home
+                }
+              } catch (e) {
+                debugPrint('Delete error: $e');
+              }
+            },
+            child: const Text('حذف', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +251,7 @@ class ResultScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${fileItem.sizeString} • ${fileItem.type == AppFileType.pdf ? "PDF" : "Image"}',
+                    '${currentFileItem.sizeString} • ${currentFileItem.type == AppFileType.pdf ? "PDF" : "Image"}',
                     style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
                   ),
                 ],
@@ -124,10 +270,14 @@ class ResultScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: AppColors.outlineVariant),
                 ),
-                suffixIcon: const Icon(Icons.edit, size: 20),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  onPressed: _showRenameDialog,
+                ),
               ),
-              controller: TextEditingController(text: fileItem.name),
+              controller: _nameController,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              onSubmitted: _renameTo,
             ),
             
             const SizedBox(height: 32),
@@ -135,7 +285,7 @@ class ResultScreen extends StatelessWidget {
             // Share Button
             ElevatedButton.icon(
               onPressed: () {
-                Share.shareXFiles([XFile(fileItem.path)], text: 'Check out my file!');
+                Share.shareXFiles([XFile(currentFileItem.path)], text: 'Check out my file!');
               },
               icon: const Icon(Icons.share, size: 20),
               label: const Text('اشتراک‌گذاری فایل'),
@@ -161,13 +311,11 @@ class ResultScreen extends StatelessWidget {
               childAspectRatio: 1.5,
               children: [
                 _buildActionCard(Icons.open_in_new, 'مشاهده فایل', onTap: () {
-                  OpenFilex.open(fileItem.path);
+                  OpenFilex.open(currentFileItem.path);
                 }),
-                _buildActionCard(Icons.print, 'چاپ', onTap: () {
-                  // Print logic could be added here
-                }),
-                _buildActionCard(Icons.drive_file_rename_outline, 'تغییر نام', onTap: () {}),
-                _buildActionCard(Icons.delete, 'حذف', isError: true, onTap: () {}),
+                _buildActionCard(Icons.print, 'چاپ', onTap: _printFile),
+                _buildActionCard(Icons.drive_file_rename_outline, 'تغییر نام', onTap: _showRenameDialog),
+                _buildActionCard(Icons.delete, 'حذف', isError: true, onTap: _showDeleteDialog),
               ],
             ),
           ],
