@@ -6,6 +6,7 @@ import '../../core/app_colors.dart';
 import '../../services/app_state.dart';
 import '../export/export_options_dialog.dart';
 import '../camera/multi_capture_screen.dart';
+import 'image_enhance_screen.dart';
 
 class ReorderPagesScreen extends StatefulWidget {
   const ReorderPagesScreen({super.key});
@@ -187,11 +188,32 @@ class _ReorderPagesScreenState extends State<ReorderPagesScreen> {
                     'صفحه ${index + 1}',
                     style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: AppColors.error),
-                    onPressed: () {
-                      appState.removeImage(index);
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.tune, color: AppColors.primary),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ImageEnhanceScreen(
+                                imagePath: path,
+                                onSaved: (newPath) {
+                                  appState.updateImagePath(index, newPath);
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: AppColors.error),
+                        onPressed: () {
+                          appState.removeImage(index);
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );

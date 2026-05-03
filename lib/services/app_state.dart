@@ -58,6 +58,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateImagePath(int index, String newPath) {
+    if (index >= 0 && index < _selectedImagePaths.length) {
+      _selectedImagePaths[index] = newPath;
+      notifyListeners();
+    }
+  }
+
   void setProcessing(bool value) {
     _isProcessing = value;
     notifyListeners();
