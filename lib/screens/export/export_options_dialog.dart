@@ -17,8 +17,6 @@ class ExportOptionsDialog extends StatefulWidget {
 
 class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   String _exportMode = 'Single'; // Single PDF or Separate PDFs
-  bool _usePassword = false;
-  final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _handleExport() async {
     final appState = Provider.of<AppState>(context, listen: false);
@@ -32,8 +30,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
       final baseName = 'CCPdf_${DateTime.now().millisecondsSinceEpoch}';
       
       if (_exportMode == 'Single') {
-        final password = _usePassword ? _passwordController.text : null;
-        final file = await PdfService.imagesToPdf(appState.selectedImagePaths, baseName, password: password);
+        final file = await PdfService.imagesToPdf(appState.selectedImagePaths, baseName);
         
         final fileItem = FileItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -146,32 +143,6 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
               isSelected: _exportMode == 'Separate',
               onTap: () => setState(() => _exportMode = 'Separate'),
             ),
-            
-            const SizedBox(height: 32),
-            const Text(
-              'امنیت و حفاظت',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SwitchListTile(
-              title: const Text('استفاده از رمز عبور'),
-              subtitle: const Text('فقط افرادی که رمز دارند می‌توانند فایل را باز کنند'),
-              value: _usePassword,
-              activeColor: AppColors.primary,
-              onChanged: (val) => setState(() => _usePassword = val),
-            ),
-            if (_usePassword)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'رمز عبور را وارد کنید',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.password),
-                  ),
-                  obscureText: true,
-                ),
-              ),
             
             const SizedBox(height: 60),
             

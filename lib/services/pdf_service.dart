@@ -11,7 +11,7 @@ class PdfService {
   static const String watermarkText = 'Created by CCScaner';
 
   /// Convert multiple images into a single multi-page PDF with optional password
-  static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {String? password}) async {
+  static Future<File> imagesToPdf(List<String> imagePaths, String fileName) async {
     final pdf = pw.Document();
 
     for (final path in imagePaths) {
@@ -46,16 +46,12 @@ class PdfService {
     final dir = await FileStorageService.getCCPdfDirectory();
     final file = File(p.join(dir.path, '$fileName.pdf'));
     
-    final encryption = password != null 
-        ? PdfEncryption(userPassword: password, ownerPassword: password, accessFlags: PdfEncryptionFlags.all())
-        : null;
-        
-    await file.writeAsBytes(await pdf.save(encryption: encryption));
+    await file.writeAsBytes(await pdf.save());
     return file;
   }
 
   /// Special layout for ID Card: Two images on one A4 page
-  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {String? password}) async {
+  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName) async {
     final pdf = pw.Document();
 
     final frontImage = pw.MemoryImage(File(frontPath).readAsBytesSync());
@@ -113,11 +109,7 @@ class PdfService {
     final dir = await FileStorageService.getCCPdfDirectory();
     final file = File(p.join(dir.path, '$fileName.pdf'));
     
-    final encryption = password != null 
-        ? PdfEncryption(userPassword: password, ownerPassword: password, accessFlags: PdfEncryptionFlags.all())
-        : null;
-        
-    await file.writeAsBytes(await pdf.save(encryption: encryption));
+    await file.writeAsBytes(await pdf.save());
     return file;
   }
 
