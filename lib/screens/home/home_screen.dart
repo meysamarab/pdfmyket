@@ -9,6 +9,8 @@ import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
 import '../../services/app_state.dart';
 import '../editor/reorder_pages_screen.dart';
+import '../camera/id_card_capture_screen.dart';
+import '../pdf/merge_pdf_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -116,6 +118,49 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSmallCard(
+                    context,
+                    title: 'اسکن کارت',
+                    icon: Icons.badge,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const IdCardCaptureScreen()),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildSmallCard(
+                    context,
+                    title: 'ادغام PDF',
+                    icon: Icons.merge_type,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MergePdfScreen()),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildSmallCard(
+              context,
+              title: 'رمزگذاری و امنیت (Lock PDF)',
+              icon: Icons.lock,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('این قابلیت در تنظیمات خروجی در دسترس است')),
+                );
+              },
+            ),
             const SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -189,6 +234,41 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(
                 color: isPrimary ? Colors.white : AppColors.primary,
                 fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.outlineVariant, width: 1),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: AppColors.primary),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -10,9 +10,13 @@ import 'file_storage_service.dart';
 class PdfService {
   static const String watermarkText = 'Created by CCScaner';
 
-  /// Convert multiple images into a single multi-page PDF with watermark
-  static Future<File> imagesToPdf(List<String> imagePaths, String fileName) async {
-    final pdf = pw.Document();
+  /// Convert multiple images into a single multi-page PDF with optional password
+  static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {String? password}) async {
+    final pdf = pw.Document(
+      encryption: password != null 
+        ? pw.PdfEncryption(userPassword: password, ownerPassword: password, accessFlags: pw.PdfEncryptionFlags.all())
+        : null,
+    );
 
     for (final path in imagePaths) {
       final image = pw.MemoryImage(File(path).readAsBytesSync());
@@ -45,6 +49,96 @@ class PdfService {
 
     final dir = await FileStorageService.getCCPdfDirectory();
     final file = File(p.join(dir.path, '$fileName.pdf'));
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Special layout for ID Card: Two images on one A4 page
+  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {String? password}) async {
+    final pdf = pw.Document(
+      encryption: password != null 
+        ? pw.PdfEncryption(userPassword: password, ownerPassword: password)
+        : null,
+    );
+
+    final frontImage = pw.MemoryImage(File(frontPath).readAsBytesSync());
+    final backImage = pw.MemoryImage(File(backPath).readAsBytesSync());
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Stack(
+            children: [
+              pw.Column(
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                children: [
+                  pw.Text('FRONT SIDE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.grey700)),
+                  pw.SizedBox(height: 10),
+                  pw.Container(
+                    height: 250,
+                    width: 400,
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey300, width: 1),
+                    ),
+                    child: pw.Image(frontImage, fit: pw.BoxFit.cover),
+                  ),
+                  pw.SizedBox(height: 40),
+                  pw.Text('BACK SIDE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.grey700)),
+                  pw.SizedBox(height: 10),
+                  pw.Container(
+                    height: 250,
+                    width: 400,
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey300, width: 1),
+                    ),
+                    child: pw.Image(backImage, fit: pw.BoxFit.cover),
+                  ),
+                ],
+              ),
+              pw.Positioned(
+                bottom: 20,
+                right: 20,
+                child: pw.Text(
+                  watermarkText,
+                  style: pw.TextStyle(
+                    color: PdfColors.grey400,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    final dir = await FileStorageService.getCCPdfDirectory();
+    final file = File(p.join(dir.path, '$fileName.pdf'));
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Merge multiple existing PDFs into one
+  static Future<File> mergePdfs(List<String> pdfPaths, String outputName) async {
+    final pdf = pw.Document();
+
+    for (final path in pdfPaths) {
+      final bytes = await File(path).readAsBytes();
+      await for (final page in Printing.raster(bytes, dpi: 200)) {
+        final pngBytes = await page.toPng();
+        final image = pw.MemoryImage(pngBytes);
+        pdf.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            build: (pw.Context context) => pw.Center(child: pw.Image(image)),
+          ),
+        );
+      }
+    }
+
+    final dir = await FileStorageService.getCCPdfDirectory();
+    final file = File(p.join(dir.path, '$outputName.pdf'));
     await file.writeAsBytes(await pdf.save());
     return file;
   }
