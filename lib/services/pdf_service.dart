@@ -119,7 +119,8 @@ class PdfService {
 
     for (final path in pdfPaths) {
       final bytes = await File(path).readAsBytes();
-      await for (final page in Printing.raster(bytes, dpi: 200)) {
+      // Reduced DPI to 150 to prevent memory/GLES issues on some devices
+      await for (final page in Printing.raster(bytes, dpi: 150)) {
         final pngBytes = await page.toPng();
         final image = pw.MemoryImage(pngBytes);
         pdf.addPage(
@@ -188,7 +189,7 @@ class PdfService {
     final baseName = p.basenameWithoutExtension(pdfPath);
 
     int i = 1;
-    await for (final page in Printing.raster(bytes, dpi: 300)) {
+    await for (final page in Printing.raster(bytes, dpi: 150)) {
       final pngBytes = await page.toPng();
       
       // Add watermark to the image
