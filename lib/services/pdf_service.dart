@@ -12,11 +12,7 @@ class PdfService {
 
   /// Convert multiple images into a single multi-page PDF with optional password
   static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {String? password}) async {
-    final pdf = pw.Document(
-      encryption: password != null 
-        ? pw.PdfEncryption(userPassword: password, ownerPassword: password, accessFlags: pw.PdfEncryptionFlags.all())
-        : null,
-    );
+    final pdf = pw.Document();
 
     for (final path in imagePaths) {
       final image = pw.MemoryImage(File(path).readAsBytesSync());
@@ -49,17 +45,18 @@ class PdfService {
 
     final dir = await FileStorageService.getCCPdfDirectory();
     final file = File(p.join(dir.path, '$fileName.pdf'));
-    await file.writeAsBytes(await pdf.save());
+    
+    final encryption = password != null 
+        ? PdfEncryption(userPassword: password, ownerPassword: password, accessFlags: PdfEncryptionFlags.all())
+        : null;
+        
+    await file.writeAsBytes(await pdf.save(encryption: encryption));
     return file;
   }
 
   /// Special layout for ID Card: Two images on one A4 page
   static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {String? password}) async {
-    final pdf = pw.Document(
-      encryption: password != null 
-        ? pw.PdfEncryption(userPassword: password, ownerPassword: password)
-        : null,
-    );
+    final pdf = pw.Document();
 
     final frontImage = pw.MemoryImage(File(frontPath).readAsBytesSync());
     final backImage = pw.MemoryImage(File(backPath).readAsBytesSync());
@@ -115,7 +112,12 @@ class PdfService {
 
     final dir = await FileStorageService.getCCPdfDirectory();
     final file = File(p.join(dir.path, '$fileName.pdf'));
-    await file.writeAsBytes(await pdf.save());
+    
+    final encryption = password != null 
+        ? PdfEncryption(userPassword: password, ownerPassword: password, accessFlags: PdfEncryptionFlags.all())
+        : null;
+        
+    await file.writeAsBytes(await pdf.save(encryption: encryption));
     return file;
   }
 
