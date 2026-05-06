@@ -4,19 +4,21 @@ import '../core/app_colors.dart';
 import '../services/app_state.dart';
 import 'home/home_screen.dart';
 import 'history/history_screen.dart';
-import 'gallery/gallery_picker_screen.dart';
 import 'settings/settings_screen.dart';
 import 'camera/multi_capture_screen.dart';
+import 'files/files_screen.dart';
+
 
 class MainShell extends StatelessWidget {
   const MainShell({super.key});
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    HistoryScreen(), // Recent Files
-    HistoryScreen(), // History (Redirecting both to history for now as requested)
+    FilesScreen(), // User requested Files page here
+    HistoryScreen(), // History tab
     SettingsScreen(),
   ];
+
 
   @override
   Widget build(BuildContext context) {

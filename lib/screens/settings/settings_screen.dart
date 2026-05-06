@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/app_colors.dart';
+import '../../services/app_state.dart';
 import '../../services/file_storage_service.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -7,6 +10,9 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+    final String storagePathDisplay = appState.defaultStoragePath ?? 'پوشه CCPdf (پیش‌فرض)';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -58,14 +64,19 @@ class SettingsScreen extends StatelessWidget {
               ),
               _SettingsItem(
                 icon: Icons.folder,
-                title: 'محل ذخیره‌سازی',
-                subtitle: 'پوشه CCPdf',
+                title: 'محل ذخیره‌سازی پیش‌فرض',
+                subtitle: storagePathDisplay,
                 onTap: () async {
-                  final dir = await FileStorageService.getCCPdfDirectory();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(dir.path)),
-                    );
+                  final String? result = await FilePicker.platform.getDirectoryPath(
+                    dialogTitle: 'انتخاب محل ذخیره پیش‌فرض',
+                  );
+                  if (result != null) {
+                    await appState.setDefaultStoragePath(result);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('محل ذخیره‌سازی پیش‌فرض تغییر کرد')),
+                      );
+                    }
                   }
                 },
               ),
@@ -118,7 +129,7 @@ class SettingsScreen extends StatelessWidget {
               _SettingsItem(
                 icon: Icons.info_outline,
                 title: 'نسخه برنامه',
-                subtitle: '1.0.0',
+                subtitle: '1.0.2',
                 onTap: null,
               ),
               _SettingsItem(
@@ -129,7 +140,7 @@ class SettingsScreen extends StatelessWidget {
                   showLicensePage(
                     context: context,
                     applicationName: 'CCScaner',
-                    applicationVersion: '1.0.0',
+                    applicationVersion: '1.0.2',
                   );
                 },
               ),
@@ -233,6 +244,7 @@ class SettingsScreen extends StatelessWidget {
                     ? Text(
                         item.subtitle!,
                         style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                        overflow: TextOverflow.ellipsis,
                       )
                     : null,
                 trailing: item.onTap != null

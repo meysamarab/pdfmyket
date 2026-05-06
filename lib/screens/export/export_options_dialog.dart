@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../core/app_colors.dart';
 import '../../services/app_state.dart';
 import '../../services/pdf_service.dart';
@@ -17,9 +18,24 @@ class ExportOptionsDialog extends StatefulWidget {
 
 class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   String _exportMode = 'Single'; // Single PDF or Separate PDFs
+  PdfExportProfile _selectedProfile = PdfExportProfile.standard;
+  bool _isCustomLocationEnabled = false;
 
   Future<void> _handleExport() async {
     final appState = Provider.of<AppState>(context, listen: false);
+    
+    String? customPath;
+    if (_isCustomLocationEnabled) {
+      customPath = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'انتخاب محل ذخیره فایل',
+      );
+      if (customPath == null) return; // User cancelled
+    } else {
+      // Use global default if set
+      customPath = appState.defaultStoragePath;
+    }
+
+    if (!mounted) return;
     
     Navigator.push(
       context,
@@ -30,11 +46,16 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
       final baseName = 'CCPdf_${DateTime.now().millisecondsSinceEpoch}';
       
       if (_exportMode == 'Single') {
-        final file = await PdfService.imagesToPdf(appState.selectedImagePaths, baseName);
+        final file = await PdfService.imagesToPdf(
+          appState.selectedImagePaths, 
+          baseName,
+          profile: _selectedProfile,
+          customDirectory: customPath,
+        );
         
         final fileItem = FileItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: file.path.split('/').last,
+          name: file.path.split(Platform.pathSeparator).last,
           path: file.path,
           size: await file.length(),
           createdAt: DateTime.now(),
@@ -51,14 +72,18 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
         }
       } else {
         // Separate PDFs
-        final files = await PdfService.imagesToSeparatePdfs(appState.selectedImagePaths, baseName);
+        final files = await PdfService.imagesToSeparatePdfs(
+          appState.selectedImagePaths, 
+          baseName,
+          profile: _selectedProfile,
+          customDirectory: customPath,
+        );
         
-        // Add all to recent files (last one will be shown in result screen)
         FileItem? lastItem;
         for (final file in files) {
           lastItem = FileItem(
             id: file.path.hashCode.toString(),
-            name: file.path.split('/').last,
+            name: file.path.split(Platform.pathSeparator).last,
             path: file.path,
             size: await file.length(),
             createdAt: DateTime.now(),
@@ -75,12 +100,11 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
         }
       }
       
-      // Clear selection after success
       appState.clearImages();
       
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Go back from processing
+        Navigator.pop(context); 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('خطا در خروجی گرفتن: $e')),
         );
@@ -118,16 +142,8 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'حالت خروجی',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              'نحوه ذخیره فایل‌های خود را انتخاب کنید.',
-              style: TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
-            ),
-            const SizedBox(height: 32),
-            
+            _buildSectionTitle('حالت خروجی', 'نحوه ذخیره فایل‌های خود را انتخاب کنید.'),
+            const SizedBox(height: 16),
             _buildOptionCard(
               title: 'خروجی در یک فایل PDF',
               subtitle: 'همه تصاویر در یک فایل چند صفحه‌ای ذخیره می‌شوند',
@@ -135,7 +151,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
               isSelected: _exportMode == 'Single',
               onTap: () => setState(() => _exportMode = 'Single'),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildOptionCard(
               title: 'خروجی در فایل‌های جداگانه',
               subtitle: 'هر تصویر در یک فایل PDF جداگانه ذخیره می‌شود',
@@ -144,7 +160,27 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
               onTap: () => setState(() => _exportMode = 'Separate'),
             ),
             
-            const SizedBox(height: 60),
+            const SizedBox(height: 32),
+            _buildSectionTitle('خروجی مخصوص بارگذاری (کاهش حجم)', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
+            const SizedBox(height: 16),
+            _buildProfileOption('استاندارد (کیفیت بالا)', 'بدون کاهش حجم اضافی', PdfExportProfile.standard, Icons.high_quality),
+            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance),
+            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language),
+            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress),
+
+            const SizedBox(height: 32),
+            _buildSectionTitle('محل ذخیره', 'انتخاب کنید فایل کجا ذخیره شود'),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              value: _isCustomLocationEnabled,
+              onChanged: (val) => setState(() => _isCustomLocationEnabled = val),
+              title: const Text('انتخاب محل ذخیره توسط من', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              subtitle: const Text('اگر غیرفعال باشد، در پوشه CCPdf ذخیره می‌شود', style: TextStyle(fontSize: 12)),
+              activeColor: AppColors.primary,
+              contentPadding: EdgeInsets.zero,
+            ),
+            
+            const SizedBox(height: 40),
             
             ElevatedButton.icon(
               onPressed: _handleExport,
@@ -160,6 +196,51 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
                 elevation: 4,
               ),
             ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(subtitle, style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant)),
+      ],
+    );
+  }
+
+  Widget _buildProfileOption(String title, String subtitle, PdfExportProfile profile, IconData icon) {
+    final isSelected = _selectedProfile == profile;
+    return InkWell(
+      onTap: () => setState(() => _selectedProfile = profile),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isSelected ? AppColors.primary : AppColors.outline, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.primary : AppColors.onSurface)),
+                  Text(subtitle, style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                ],
+              ),
+            ),
+            if (isSelected) const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
           ],
         ),
       ),
@@ -177,7 +258,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -185,52 +266,24 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
             color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.5),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
-          ] : null,
         ),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceContainerHigh,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant, size: 28),
-            ),
+            Icon(icon, color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? AppColors.primary : AppColors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isSelected ? AppColors.primary.withOpacity(0.8) : AppColors.onSurfaceVariant,
-                    ),
-                  ),
+                  Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isSelected ? AppColors.primary : AppColors.onSurface)),
+                  Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
                 ],
               ),
             ),
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
               color: isSelected ? AppColors.primary : AppColors.outlineVariant,
+              size: 20,
             ),
           ],
         ),

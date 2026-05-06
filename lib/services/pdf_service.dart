@@ -7,15 +7,25 @@ import 'package:printing/printing.dart';
 import 'package:image/image.dart' as img;
 import 'file_storage_service.dart';
 
+enum PdfExportProfile {
+  standard,
+  government, // < 2 MB
+  embassy,    // < 2.5 MB
+  maxCompression // < 1 MB
+}
+
 class PdfService {
   static const String watermarkText = 'Created by CCScaner';
 
-  /// Convert multiple images into a single multi-page PDF with optional password
-  static Future<File> imagesToPdf(List<String> imagePaths, String fileName) async {
+
+  /// Convert multiple images into a single multi-page PDF with optional compression and custom directory
+  static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
     final pdf = pw.Document();
 
     for (final path in imagePaths) {
-      final image = pw.MemoryImage(File(path).readAsBytesSync());
+      final processedBytes = await _processImageForProfile(path, profile);
+      final image = pw.MemoryImage(processedBytes);
+
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -43,19 +53,24 @@ class PdfService {
       );
     }
 
-    final dir = await FileStorageService.getCCPdfDirectory();
-    final file = File(p.join(dir.path, '$fileName.pdf'));
+    final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
+    final file = File(p.join(dirPath, '$fileName.pdf'));
+
     
     await file.writeAsBytes(await pdf.save());
     return file;
   }
 
   /// Special layout for ID Card: Two images on one A4 page
-  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName) async {
+  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
     final pdf = pw.Document();
 
-    final frontImage = pw.MemoryImage(File(frontPath).readAsBytesSync());
-    final backImage = pw.MemoryImage(File(backPath).readAsBytesSync());
+    final frontBytes = await _processImageForProfile(frontPath, profile);
+    final backBytes = await _processImageForProfile(backPath, profile);
+
+    final frontImage = pw.MemoryImage(frontBytes);
+    final backImage = pw.MemoryImage(backBytes);
+
 
     pdf.addPage(
       pw.Page(
@@ -106,8 +121,9 @@ class PdfService {
       ),
     );
 
-    final dir = await FileStorageService.getCCPdfDirectory();
-    final file = File(p.join(dir.path, '$fileName.pdf'));
+    final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
+    final file = File(p.join(dirPath, '$fileName.pdf'));
+
     
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -139,13 +155,15 @@ class PdfService {
   }
 
   /// Convert each image into a separate single-page PDF with watermark
-  static Future<List<File>> imagesToSeparatePdfs(List<String> imagePaths, String baseName) async {
-    final dir = await FileStorageService.getCCPdfDirectory();
+  static Future<List<File>> imagesToSeparatePdfs(List<String> imagePaths, String baseName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+    final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
     final List<File> files = [];
 
     for (int i = 0; i < imagePaths.length; i++) {
       final pdf = pw.Document();
-      final image = pw.MemoryImage(File(imagePaths[i]).readAsBytesSync());
+      final processedBytes = await _processImageForProfile(imagePaths[i], profile);
+      final image = pw.MemoryImage(processedBytes);
+
       
       pdf.addPage(
         pw.Page(
@@ -173,7 +191,8 @@ class PdfService {
         ),
       );
 
-      final file = File(p.join(dir.path, '${baseName}_${i + 1}.pdf'));
+      final file = File(p.join(dirPath, '${baseName}_${i + 1}.pdf'));
+
       await file.writeAsBytes(await pdf.save());
       files.add(file);
     }
@@ -234,4 +253,41 @@ class PdfService {
 
     return pages;
   }
+
+  /// Process image according to the selected profile (Resize and Compress)
+  static Future<Uint8List> _processImageForProfile(String path, PdfExportProfile profile) async {
+    final bytes = await File(path).readAsBytes();
+    if (profile == PdfExportProfile.standard) return bytes;
+
+    final image = img.decodeImage(bytes);
+    if (image == null) return bytes;
+
+    int? targetWidth;
+    int quality = 85;
+
+    switch (profile) {
+      case PdfExportProfile.government:
+        targetWidth = 1500;
+        quality = 70;
+        break;
+      case PdfExportProfile.embassy:
+        targetWidth = 2000;
+        quality = 80;
+        break;
+      case PdfExportProfile.maxCompression:
+        targetWidth = 1000;
+        quality = 50;
+        break;
+      default:
+        return bytes;
+    }
+
+    img.Image resized = image;
+    if (image.width > targetWidth) {
+      resized = img.copyResize(image, width: targetWidth);
+    }
+
+    return Uint8List.fromList(img.encodeJpg(resized, quality: quality));
+  }
 }
+

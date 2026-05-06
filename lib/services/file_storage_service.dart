@@ -76,9 +76,15 @@ class FileStorageService {
     return source.copy(destPath);
   }
 
-  /// List all files in the CCPdf directory
-  static Future<List<FileItem>> listFiles() async {
-    final dir = await getCCPdfDirectory();
+  /// List all files in the CCPdf directory or a custom directory
+  static Future<List<FileItem>> listFiles({String? customPath}) async {
+    final Directory dir;
+    if (customPath != null) {
+      dir = Directory(customPath);
+    } else {
+      dir = await getCCPdfDirectory();
+    }
+    
     final List<FileItem> items = [];
 
     if (!await dir.exists()) return items;
@@ -97,14 +103,16 @@ class FileStorageService {
           final name = p.basename(entity.path);
           final ext = p.extension(entity.path).toLowerCase();
           
-          items.add(FileItem(
-            id: entity.path.hashCode.toString(),
-            name: name,
-            path: entity.path,
-            size: stat.size,
-            createdAt: stat.modified,
-            type: ext == '.pdf' ? AppFileType.pdf : AppFileType.image,
-          ));
+          if (ext == '.pdf' || ext == '.png' || ext == '.jpg' || ext == '.jpeg') {
+            items.add(FileItem(
+              id: entity.path.hashCode.toString(),
+              name: name,
+              path: entity.path,
+              size: stat.size,
+              createdAt: stat.modified,
+              type: ext == '.pdf' ? AppFileType.pdf : AppFileType.image,
+            ));
+          }
         }
       }
     } catch (e) {

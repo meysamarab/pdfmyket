@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/file_item.dart';
 import 'file_storage_service.dart';
 
@@ -8,12 +9,14 @@ class AppState extends ChangeNotifier {
   double _processingProgress = 0.0;
   List<FileItem> _recentFiles = [];
   int _currentTabIndex = 0;
+  String? _defaultStoragePath;
 
   List<String> get selectedImagePaths => _selectedImagePaths;
   bool get isProcessing => _isProcessing;
   double get processingProgress => _processingProgress;
   List<FileItem> get recentFiles => _recentFiles;
   int get currentTabIndex => _currentTabIndex;
+  String? get defaultStoragePath => _defaultStoragePath;
 
   void setTabIndex(int index) {
     _currentTabIndex = index;
@@ -21,13 +24,32 @@ class AppState extends ChangeNotifier {
   }
 
   AppState() {
+    _loadSettings();
     loadRecentFiles();
   }
 
-  /// Load recent files from the CCPdf directory
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    _defaultStoragePath = prefs.getString('defaultStoragePath');
+    notifyListeners();
+  }
+
+  Future<void> setDefaultStoragePath(String? path) async {
+    _defaultStoragePath = path;
+    final prefs = await SharedPreferences.getInstance();
+    if (path == null) {
+      await prefs.remove('defaultStoragePath');
+    } else {
+      await prefs.setString('defaultStoragePath', path);
+    }
+    await loadRecentFiles(); // Reload files from new path
+    notifyListeners();
+  }
+
+  /// Load recent files from the current storage directory
   Future<void> loadRecentFiles() async {
     try {
-      _recentFiles = await FileStorageService.listFiles();
+      _recentFiles = await FileStorageService.listFiles(customPath: _defaultStoragePath);
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading recent files: $e');
