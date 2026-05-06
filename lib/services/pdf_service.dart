@@ -20,6 +20,7 @@ class PdfService {
 
   /// Convert multiple images into a single multi-page PDF with optional compression and custom directory
   static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+    await FileStorageService.requestPermissions();
     final pdf = pw.Document();
 
     for (final path in imagePaths) {
@@ -63,6 +64,7 @@ class PdfService {
 
   /// Special layout for ID Card: Two images on one A4 page
   static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+    await FileStorageService.requestPermissions();
     final pdf = pw.Document();
 
     final frontBytes = await _processImageForProfile(frontPath, profile);
@@ -131,6 +133,7 @@ class PdfService {
 
   /// Merge multiple existing PDFs into one
   static Future<File> mergePdfs(List<String> pdfPaths, String outputName) async {
+    await FileStorageService.requestPermissions();
     final pdf = pw.Document();
 
     for (final path in pdfPaths) {
@@ -156,6 +159,7 @@ class PdfService {
 
   /// Convert each image into a separate single-page PDF with watermark
   static Future<List<File>> imagesToSeparatePdfs(List<String> imagePaths, String baseName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+    await FileStorageService.requestPermissions();
     final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
     final List<File> files = [];
 
@@ -202,6 +206,7 @@ class PdfService {
 
   /// Convert PDF pages to images with watermark using image package
   static Future<List<File>> pdfToImages(String pdfPath) async {
+    await FileStorageService.requestPermissions();
     final dir = await FileStorageService.getCCPdfDirectory();
     final bytes = await File(pdfPath).readAsBytes();
     final List<File> imageFiles = [];

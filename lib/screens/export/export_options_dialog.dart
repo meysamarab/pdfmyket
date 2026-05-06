@@ -6,6 +6,7 @@ import '../../core/app_colors.dart';
 import '../../services/app_state.dart';
 import '../../services/pdf_service.dart';
 import '../../models/file_item.dart';
+import '../../services/file_storage_service.dart';
 import '../common/processing_screen.dart';
 import '../result/result_screen.dart';
 
@@ -24,6 +25,13 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   Future<void> _handleExport() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
+    final hasPermission = await FileStorageService.requestPermissions();
+    if (!hasPermission && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('برای ذخیره فایل نیاز به دسترسی حافظه است')),
+      );
+    }
+
     String? customPath;
     if (_isCustomLocationEnabled) {
       customPath = await FilePicker.platform.getDirectoryPath(

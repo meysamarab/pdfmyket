@@ -67,6 +67,13 @@ class SettingsScreen extends StatelessWidget {
                 title: 'محل ذخیره‌سازی پیش‌فرض',
                 subtitle: storagePathDisplay,
                 onTap: () async {
+                  final hasPermission = await FileStorageService.requestPermissions();
+                  if (!hasPermission && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('برای انتخاب محل ذخیره، نیاز به دسترسی حافظه است')),
+                    );
+                    return;
+                  }
                   final String? result = await FilePicker.platform.getDirectoryPath(
                     dialogTitle: 'انتخاب محل ذخیره پیش‌فرض',
                   );
