@@ -153,7 +153,7 @@ class _FilesScreenState extends State<FilesScreen> {
       backgroundColor: AppColors.surfaceContainerLow,
       checkmarkColor: AppColors.primary,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      border: Border.all(
+      side: BorderSide(
         color: isSelected ? AppColors.primary.withOpacity(0.5) : Colors.transparent,
       ),
     );
