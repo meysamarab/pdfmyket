@@ -10,6 +10,7 @@ import '../editor/reorder_pages_screen.dart';
 import '../camera/id_card_capture_screen.dart';
 import '../pdf/merge_pdf_screen.dart';
 import '../pdf/import_pdf_screen.dart';
+import '../pdf/compress_document_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -153,6 +154,13 @@ class HomeScreen extends StatelessWidget {
                 title: 'تبدیل پی‌دی‌اف به عکس',
                 icon: Icons.picture_as_pdf,
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ImportPdfScreen())),
+              ),
+              const SizedBox(height: 12),
+              _buildToolCard(
+                context,
+                title: 'تنظیم عکس یا سند برای بارگذاری',
+                icon: Icons.auto_fix_high_rounded,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompressDocumentScreen())),
               ),
               const SizedBox(height: 30),
               // Recent Scans Section

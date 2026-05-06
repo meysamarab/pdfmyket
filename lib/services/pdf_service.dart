@@ -19,7 +19,7 @@ class PdfService {
 
 
   /// Convert multiple images into a single multi-page PDF with optional compression and custom directory
-  static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+  static Future<File> imagesToPdf(List<String> imagePaths, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory, bool addWatermark = true}) async {
     await FileStorageService.requestPermissions();
     final pdf = pw.Document();
 
@@ -36,17 +36,18 @@ class PdfService {
                 pw.Center(
                   child: pw.Image(image, fit: pw.BoxFit.contain),
                 ),
-                pw.Positioned(
-                  bottom: 20,
-                  right: 20,
-                  child: pw.Text(
-                    watermarkText,
-                    style: pw.TextStyle(
-                      color: PdfColors.grey400,
-                      fontSize: 18,
+                if (addWatermark)
+                  pw.Positioned(
+                    bottom: 20,
+                    right: 20,
+                    child: pw.Text(
+                      watermarkText,
+                      style: pw.TextStyle(
+                        color: PdfColors.grey400,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-                ),
               ],
             );
           },
@@ -205,7 +206,7 @@ class PdfService {
   }
 
   /// Convert PDF pages to images with watermark using image package
-  static Future<List<File>> pdfToImages(String pdfPath) async {
+  static Future<List<File>> pdfToImages(String pdfPath, {bool addWatermark = true}) async {
     await FileStorageService.requestPermissions();
     final dir = await FileStorageService.getCCPdfDirectory();
     final bytes = await File(pdfPath).readAsBytes();
@@ -216,11 +217,11 @@ class PdfService {
     await for (final page in Printing.raster(bytes, dpi: 72)) {
       final pngBytes = await page.toPng();
       
-      // Add watermark to the image
-      final watermarkedBytes = _addWatermarkToImage(pngBytes);
+      // Add watermark to the image if requested
+      final finalBytes = addWatermark ? _addWatermarkToImage(pngBytes) : pngBytes;
       
       final file = File(p.join(dir.path, '${baseName}_page_$i.png'));
-      await file.writeAsBytes(watermarkedBytes);
+      await file.writeAsBytes(finalBytes);
       imageFiles.add(file);
       i++;
     }
