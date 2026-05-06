@@ -39,7 +39,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
-            color: AppColors.outlineVariant.withOpacity(0.3),
+            color: AppColors.primary.withOpacity(0.1),
             height: 1.0,
           ),
         ),
@@ -76,13 +76,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.surfaceContainerHigh,
+                color: AppColors.primary.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(
-                Icons.folder_open,
+                Icons.history_rounded,
                 size: 48,
-                color: AppColors.outline,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 24),
@@ -132,12 +132,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: isPdf ? const Color(0xFFFFEBEE) : const Color(0xFFE3F2FD),
+            color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             isPdf ? Icons.picture_as_pdf : Icons.image,
-            color: isPdf ? const Color(0xFFD32F2F) : const Color(0xFF1976D2),
+            color: AppColors.primary,
           ),
         ),
         title: Text(

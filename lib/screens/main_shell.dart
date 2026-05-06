@@ -13,8 +13,8 @@ class MainShell extends StatelessWidget {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    HistoryScreen(),
-    GalleryPickerScreen(),
+    HistoryScreen(), // Recent Files
+    HistoryScreen(), // History (Redirecting both to history for now as requested)
     SettingsScreen(),
   ];
 
@@ -68,7 +68,7 @@ class MainShell extends StatelessWidget {
             _buildNavItem(context, icon: Icons.home_rounded, label: 'خانه', index: 0, currentIndex: currentIndex),
             _buildNavItem(context, icon: Icons.description_outlined, label: 'فایل‌ها', index: 1, currentIndex: currentIndex),
             const SizedBox(width: 40), // Space for FAB
-            _buildNavItem(context, icon: Icons.folder_open_rounded, label: 'پوشه‌ها', index: 2, currentIndex: currentIndex),
+            _buildNavItem(context, icon: Icons.history_rounded, label: 'تاریخچه', index: 2, currentIndex: currentIndex),
             _buildNavItem(context, icon: Icons.settings_outlined, label: 'تنظیمات', index: 3, currentIndex: currentIndex),
           ],
         ),

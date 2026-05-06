@@ -147,6 +147,13 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              _buildToolCard(
+                context,
+                title: 'تبدیل پی‌دی‌اف به عکس',
+                icon: Icons.picture_as_pdf,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ImportPdfScreen())),
+              ),
               const SizedBox(height: 30),
               // Recent Scans Section
               Row(
