@@ -24,12 +24,16 @@ tasks.register<Delete>("clean") {
 }
 
 subprojects {
-    afterEvaluate {
-        if (project.extensions.findByName("android") != null) {
-            val android = project.extensions.getByName("android") as com.android.build.gradle.BaseExtension
-            if (android.namespace == null) {
-                android.namespace = project.group.toString()
-            }
+    plugins.withId("com.android.library") {
+        val android = extensions.getByName("android") as com.android.build.gradle.BaseExtension
+        if (android.namespace == null) {
+            android.namespace = project.group.toString()
+        }
+    }
+    plugins.withId("com.android.application") {
+        val android = extensions.getByName("android") as com.android.build.gradle.BaseExtension
+        if (android.namespace == null) {
+            android.namespace = project.group.toString()
         }
     }
 }
