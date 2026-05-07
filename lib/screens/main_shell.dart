@@ -6,6 +6,7 @@ import 'home/home_screen.dart';
 import 'history/history_screen.dart';
 import 'settings/settings_screen.dart';
 import 'camera/multi_capture_screen.dart';
+import 'editor/reorder_pages_screen.dart';
 import 'files/files_screen.dart';
 
 
@@ -49,6 +50,10 @@ class MainShell extends StatelessWidget {
             );
             if (result != null && result.isNotEmpty && context.mounted) {
               appState.addImages(result);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ReorderPagesScreen()),
+              );
             }
           },
           backgroundColor: Colors.transparent,

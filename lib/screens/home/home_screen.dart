@@ -122,41 +122,6 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               // Tools Section
-              const Text(
-                'ویژگی‌های اشتراکی',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.1,
-                children: [
-                  _buildToolCard(
-                    context,
-                    title: 'ادغام فایل‌ها',
-                    icon: Icons.merge_type,
-                    isPremium: true,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MergePdfScreen())),
-                  ),
-                  _buildToolCard(
-                    context,
-                    title: 'تنظیم سند بارگذاری',
-                    icon: Icons.auto_fix_high_rounded,
-                    isPremium: true,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompressDocumentScreen())),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'ابزارهای رایگان',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -176,6 +141,20 @@ class HomeScreen extends StatelessWidget {
                     title: 'تبدیل پی‌دی‌اف به عکس',
                     icon: Icons.picture_as_pdf,
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ImportPdfScreen())),
+                  ),
+                  _buildToolCard(
+                    context,
+                    title: 'ادغام فایل‌ها',
+                    icon: Icons.merge_type,
+                    isPremium: true,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MergePdfScreen())),
+                  ),
+                  _buildToolCard(
+                    context,
+                    title: 'تنظیم سند بارگذاری',
+                    icon: Icons.auto_fix_high_rounded,
+                    isPremium: true,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompressDocumentScreen())),
                   ),
                 ],
               ),
