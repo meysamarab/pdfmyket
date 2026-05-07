@@ -9,6 +9,7 @@ import '../../models/file_item.dart';
 import '../../services/file_storage_service.dart';
 import '../common/processing_screen.dart';
 import '../result/result_screen.dart';
+import '../common/subscription_dialog.dart';
 
 class ExportOptionsDialog extends StatefulWidget {
   const ExportOptionsDialog({super.key});
@@ -21,10 +22,16 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   String _exportMode = 'Single'; // Single PDF or Separate PDFs
   PdfExportProfile _selectedProfile = PdfExportProfile.standard;
   bool _isCustomLocationEnabled = false;
+  bool _removeWatermark = false;
 
   Future<void> _handleExport() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
+    if (_removeWatermark && !appState.canUseFeature('watermark')) {
+      SubscriptionDialog.show(context);
+      return;
+    }
+
     final hasPermission = await FileStorageService.requestPermissions();
     if (!hasPermission && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,6 +66,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
           baseName,
           profile: _selectedProfile,
           customDirectory: customPath,
+          addWatermark: !_removeWatermark,
         );
         
         final fileItem = FileItem(
@@ -71,6 +79,10 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
         );
 
         appState.addRecentFile(fileItem);
+        
+        if (!appState.isSubscribed && _removeWatermark) {
+          appState.setTrialUsed('watermark');
+        }
         
         if (mounted) {
           Navigator.pushReplacement(
@@ -98,6 +110,10 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
             type: AppFileType.pdf,
           );
           appState.addRecentFile(lastItem);
+        }
+
+        if (!appState.isSubscribed && _removeWatermark) {
+          appState.setTrialUsed('watermark');
         }
 
         if (mounted && lastItem != null) {
@@ -178,6 +194,27 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
 
             const SizedBox(height: 32),
             _buildSectionTitle('محل ذخیره', 'انتخاب کنید فایل کجا ذخیره شود'),
+            const SizedBox(height: 12),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              value: _removeWatermark,
+              onChanged: (val) => setState(() => _removeWatermark = val),
+              title: Row(
+                children: [
+                  const Text('حذف واترمارک برنامه', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  const SizedBox(width: 8),
+                  if (!appState.isSubscribed) 
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(4)),
+                      child: const Text('ویژه', style: TextStyle(fontSize: 10, color: Colors.amber, fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ),
+              subtitle: const Text('حذف متن "Created by CCScaner" از فایل نهایی', style: TextStyle(fontSize: 12)),
+              activeColor: AppColors.primary,
+              contentPadding: EdgeInsets.zero,
+            ),
             const SizedBox(height: 12),
             SwitchListTile(
               value: _isCustomLocationEnabled,

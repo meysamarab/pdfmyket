@@ -64,7 +64,7 @@ class PdfService {
   }
 
   /// Special layout for ID Card: Two images on one A4 page
-  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+  static Future<File> generateIdCardPdf(String frontPath, String backPath, String fileName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory, bool addWatermark = true}) async {
     await FileStorageService.requestPermissions();
     final pdf = pw.Document();
 
@@ -107,17 +107,18 @@ class PdfService {
                   ),
                 ],
               ),
-              pw.Positioned(
-                bottom: 20,
-                right: 20,
-                child: pw.Text(
-                  watermarkText,
-                  style: pw.TextStyle(
-                    color: PdfColors.grey400,
-                    fontSize: 18,
+              if (addWatermark)
+                pw.Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: pw.Text(
+                    watermarkText,
+                    style: pw.TextStyle(
+                      color: PdfColors.grey400,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
-              ),
             ],
           );
         },
@@ -159,7 +160,7 @@ class PdfService {
   }
 
   /// Convert each image into a separate single-page PDF with watermark
-  static Future<List<File>> imagesToSeparatePdfs(List<String> imagePaths, String baseName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory}) async {
+  static Future<List<File>> imagesToSeparatePdfs(List<String> imagePaths, String baseName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory, bool addWatermark = true}) async {
     await FileStorageService.requestPermissions();
     final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
     final List<File> files = [];
@@ -179,17 +180,18 @@ class PdfService {
                 pw.Center(
                   child: pw.Image(image, fit: pw.BoxFit.contain),
                 ),
-                pw.Positioned(
-                  bottom: 20,
-                  right: 20,
-                  child: pw.Text(
-                    watermarkText,
-                    style: pw.TextStyle(
-                      color: PdfColors.grey400,
-                      fontSize: 18,
+                if (addWatermark)
+                  pw.Positioned(
+                    bottom: 20,
+                    right: 20,
+                    child: pw.Text(
+                      watermarkText,
+                      style: pw.TextStyle(
+                        color: PdfColors.grey400,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-                ),
               ],
             );
           },
@@ -199,6 +201,25 @@ class PdfService {
       final file = File(p.join(dirPath, '${baseName}_${i + 1}.pdf'));
 
       await file.writeAsBytes(await pdf.save());
+      files.add(file);
+    }
+
+    return files;
+  }
+
+  /// Process multiple images and save them as separate compressed JPG files
+  static Future<List<File>> processImages(List<String> imagePaths, String baseName, {PdfExportProfile profile = PdfExportProfile.standard, String? customDirectory, bool addWatermark = false}) async {
+    await FileStorageService.requestPermissions();
+    final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
+    final List<File> files = [];
+
+    for (int i = 0; i < imagePaths.length; i++) {
+      Uint8List processedBytes = await _processImageForProfile(imagePaths[i], profile);
+      if (addWatermark) {
+        processedBytes = _addWatermarkToImage(processedBytes);
+      }
+      final file = File(p.join(dirPath, '${baseName}_${i + 1}.jpg'));
+      await file.writeAsBytes(processedBytes);
       files.add(file);
     }
 

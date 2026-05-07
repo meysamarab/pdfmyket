@@ -127,40 +127,39 @@ class HomeScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              Row(
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1.1,
                 children: [
-                  Expanded(
-                    child: _buildToolCard(
-                      context,
-                      title: 'اسکن کارت شناسایی',
-                      icon: Icons.badge_outlined,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const IdCardCaptureScreen())),
-                    ),
+                  _buildToolCard(
+                    context,
+                    title: 'اسکن کارت شناسایی',
+                    icon: Icons.badge_outlined,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const IdCardCaptureScreen())),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildToolCard(
-                      context,
-                      title: 'ادغام فایل‌ها',
-                      icon: Icons.merge_type,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MergePdfScreen())),
-                    ),
+                  _buildToolCard(
+                    context,
+                    title: 'ادغام فایل‌ها',
+                    icon: Icons.merge_type,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MergePdfScreen())),
+                  ),
+                  _buildToolCard(
+                    context,
+                    title: 'تبدیل پی‌دی‌اف به عکس',
+                    icon: Icons.picture_as_pdf,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ImportPdfScreen())),
+                  ),
+                  _buildToolCard(
+                    context,
+                    title: 'تنظیم سند بارگذاری',
+                    icon: Icons.auto_fix_high_rounded,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompressDocumentScreen())),
                   ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              _buildToolCard(
-                context,
-                title: 'تبدیل پی‌دی‌اف به عکس',
-                icon: Icons.picture_as_pdf,
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ImportPdfScreen())),
-              ),
-              const SizedBox(height: 12),
-              _buildToolCard(
-                context,
-                title: 'تنظیم عکس یا سند برای بارگذاری',
-                icon: Icons.auto_fix_high_rounded,
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CompressDocumentScreen())),
               ),
               const SizedBox(height: 30),
               // Recent Scans Section
@@ -192,20 +191,27 @@ class HomeScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+          border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 1.5),
           boxShadow: [
-            BoxShadow(color: AppColors.primary.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: AppColors.primary.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 6)),
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.primary, size: 30),
-            const SizedBox(height: 8),
-            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            Icon(icon, color: AppColors.primary, size: 32),
+            const SizedBox(height: 12),
+            Text(
+              title, 
+              textAlign: TextAlign.center, 
+              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),

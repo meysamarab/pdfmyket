@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/file_item.dart';
 import 'file_storage_service.dart';
+import 'billing_service.dart';
 
 class AppState extends ChangeNotifier {
   List<String> _selectedImagePaths = [];
@@ -10,6 +11,16 @@ class AppState extends ChangeNotifier {
   List<FileItem> _recentFiles = [];
   int _currentTabIndex = 0;
   String? _defaultStoragePath;
+
+  bool _isSubscribed = false;
+  bool _watermarkTrialUsed = false;
+  bool _mergeTrialUsed = false;
+  bool _adjustTrialUsed = false;
+
+  bool get isSubscribed => _isSubscribed;
+  bool get watermarkTrialUsed => _watermarkTrialUsed;
+  bool get mergeTrialUsed => _mergeTrialUsed;
+  bool get adjustTrialUsed => _adjustTrialUsed;
 
   List<String> get selectedImagePaths => _selectedImagePaths;
   bool get isProcessing => _isProcessing;
@@ -26,12 +37,58 @@ class AppState extends ChangeNotifier {
   AppState() {
     _loadSettings();
     loadRecentFiles();
+    _initBilling();
+  }
+
+  Future<void> _initBilling() async {
+    await BillingService.init();
+    _isSubscribed = await BillingService.checkSubscriptionStatus();
+    notifyListeners();
   }
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _defaultStoragePath = prefs.getString('defaultStoragePath');
+    _watermarkTrialUsed = prefs.getBool('watermarkTrialUsed') ?? false;
+    _mergeTrialUsed = prefs.getBool('mergeTrialUsed') ?? false;
+    _adjustTrialUsed = prefs.getBool('adjustTrialUsed') ?? false;
     notifyListeners();
+  }
+
+  Future<void> setTrialUsed(String feature) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (feature == 'watermark') {
+      _watermarkTrialUsed = true;
+      await prefs.setBool('watermarkTrialUsed', true);
+    } else if (feature == 'merge') {
+      _mergeTrialUsed = true;
+      await prefs.setBool('mergeTrialUsed', true);
+    } else if (feature == 'adjust') {
+      _adjustTrialUsed = true;
+      await prefs.setBool('adjustTrialUsed', true);
+    }
+    notifyListeners();
+  }
+
+  Future<void> refreshSubscription() async {
+    _isSubscribed = await BillingService.checkSubscriptionStatus();
+    notifyListeners();
+  }
+
+  Future<void> subscribe() async {
+    final success = await BillingService.purchaseSubscription();
+    if (success) {
+      _isSubscribed = true;
+      notifyListeners();
+    }
+  }
+
+  bool canUseFeature(String feature) {
+    if (_isSubscribed) return true;
+    if (feature == 'watermark') return !_watermarkTrialUsed;
+    if (feature == 'merge') return !_mergeTrialUsed;
+    if (feature == 'adjust') return !_adjustTrialUsed;
+    return false;
   }
 
   Future<void> setDefaultStoragePath(String? path) async {

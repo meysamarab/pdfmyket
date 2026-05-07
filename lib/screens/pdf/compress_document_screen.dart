@@ -10,6 +10,7 @@ import '../../models/file_item.dart';
 import '../../services/file_storage_service.dart';
 import '../common/processing_screen.dart';
 import '../result/result_screen.dart';
+import '../common/subscription_dialog.dart';
 
 class CompressDocumentScreen extends StatefulWidget {
   const CompressDocumentScreen({super.key});
@@ -23,6 +24,8 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
   bool _isPdf = false;
   PdfExportProfile _selectedProfile = PdfExportProfile.government;
   bool _isCustomLocationEnabled = false;
+  String _outputFormat = 'PDF'; // PDF or Image
+  bool _removeWatermark = false;
 
   Future<void> _pickFiles() async {
     showModalBottomSheet(
@@ -56,6 +59,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
                         setState(() {
                           _selectedFilePaths = images.map((e) => e.path).toList();
                           _isPdf = false;
+                          _outputFormat = 'PDF'; // Default to PDF
                         });
                       }
                     },
@@ -76,6 +80,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
                         setState(() {
                           _selectedFilePaths = [result.files.single.path!];
                           _isPdf = true;
+                          _outputFormat = 'PDF';
                         });
                       }
                     },
@@ -121,6 +126,16 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
     }
 
     final appState = Provider.of<AppState>(context, listen: false);
+
+    // Subscription Checks
+    final bool needsSubForWatermark = _removeWatermark && !appState.canUseFeature('watermark');
+    final bool needsSubForAdjust = !appState.canUseFeature('adjust');
+
+    if (needsSubForWatermark || needsSubForAdjust) {
+      SubscriptionDialog.show(context);
+      return;
+    }
+
     final hasPermission = await FileStorageService.requestPermissions();
     if (!hasPermission && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +163,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
 
     try {
       final baseName = 'Adjusted_${DateTime.now().millisecondsSinceEpoch}';
-      File resultFile;
+      File? resultFile;
 
       if (_isPdf) {
         // PDF Processing: Rasterize then re-compress
@@ -160,6 +175,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
           baseName,
           profile: _selectedProfile,
           customDirectory: customPath,
+          addWatermark: !_removeWatermark,
         );
 
         // Cleanup temp images
@@ -168,30 +184,67 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
         }
       } else {
         // Image Processing
-        resultFile = await PdfService.imagesToPdf(
-          _selectedFilePaths, 
-          baseName,
-          profile: _selectedProfile,
-          customDirectory: customPath,
-        );
+        if (_outputFormat == 'PDF') {
+          resultFile = await PdfService.imagesToPdf(
+            _selectedFilePaths, 
+            baseName,
+            profile: _selectedProfile,
+            customDirectory: customPath,
+            addWatermark: !_removeWatermark,
+          );
+        } else {
+          // Output as Image
+          final List<File> processedImages = await PdfService.processImages(
+            _selectedFilePaths, 
+            baseName,
+            profile: _selectedProfile,
+            customDirectory: customPath,
+          );
+          if (processedImages.isNotEmpty) {
+            resultFile = processedImages.first; // Return first one for result screen
+            // Add others to recent files
+            for (int i = 1; i < processedImages.length; i++) {
+              final f = processedImages[i];
+              appState.addRecentFile(FileItem(
+                id: 'img_${f.path.hashCode}',
+                name: f.path.split(Platform.pathSeparator).last,
+                path: f.path,
+                size: await f.length(),
+                createdAt: DateTime.now(),
+                type: AppFileType.image,
+              ));
+            }
+          }
+        }
       }
       
-      final fileItem = FileItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: resultFile.path.split(Platform.pathSeparator).last,
-        path: resultFile.path,
-        size: await resultFile.length(),
-        createdAt: DateTime.now(),
-        type: AppFileType.pdf,
-      );
+      if (resultFile != null) {
+        if (!appState.isSubscribed) {
+          appState.setTrialUsed('adjust');
+          if (_removeWatermark) {
+            appState.setTrialUsed('watermark');
+          }
+        }
 
-      appState.addRecentFile(fileItem);
-      
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ResultScreen(fileItem: fileItem)),
+        final fileItem = FileItem(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: resultFile.path.split(Platform.pathSeparator).last,
+          path: resultFile.path,
+          size: await resultFile.length(),
+          createdAt: DateTime.now(),
+          type: _outputFormat == 'PDF' ? AppFileType.pdf : AppFileType.image,
         );
+
+        appState.addRecentFile(fileItem);
+        
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ResultScreen(fileItem: fileItem)),
+          );
+        }
+      } else {
+        if (mounted) Navigator.pop(context);
       }
       
     } catch (e) {
@@ -238,7 +291,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2), style: BorderStyle.solid),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
                   boxShadow: [
                     BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
                   ],
@@ -267,6 +320,31 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
               ),
             ),
 
+            if (!_isPdf && _selectedFilePaths.isNotEmpty) ...[
+              const SizedBox(height: 32),
+              _buildSectionTitle('فرمت خروجی', 'انتخاب کنید فایل نهایی چه فرمتی باشد'),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildChoiceChip(
+                      label: 'فایل PDF',
+                      isSelected: _outputFormat == 'PDF',
+                      onTap: () => setState(() => _outputFormat = 'PDF'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildChoiceChip(
+                      label: 'عکس (JPG)',
+                      isSelected: _outputFormat == 'Image',
+                      onTap: () => setState(() => _outputFormat = 'Image'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
             const SizedBox(height: 32),
             _buildSectionTitle('تنظیمات کاهش حجم', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
             const SizedBox(height: 16),
@@ -275,8 +353,26 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
             _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language),
             _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress),
 
-            const SizedBox(height: 32),
-            _buildSectionTitle('محل ذخیره', 'انتخاب کنید فایل کجا ذخیره شود'),
+            const SizedBox(height: 24),
+            SwitchListTile(
+              value: _removeWatermark,
+              onChanged: (val) => setState(() => _removeWatermark = val),
+              title: Row(
+                children: [
+                  const Text('حذف واترمارک برنامه', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  const SizedBox(width: 8),
+                  if (!appState.isSubscribed) 
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(4)),
+                      child: const Text('ویژه', style: TextStyle(fontSize: 10, color: Colors.amber, fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ),
+              subtitle: const Text('حذف متن "Created by CCScaner" از فایل نهایی', style: TextStyle(fontSize: 12)),
+              activeColor: AppColors.primary,
+              contentPadding: EdgeInsets.zero,
+            ),
             const SizedBox(height: 12),
             SwitchListTile(
               value: _isCustomLocationEnabled,
@@ -317,6 +413,31 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
         Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
       ],
+    );
+  }
+
+  Widget _buildChoiceChip({required String label, required bool isSelected, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.5)),
+          boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))] : [],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppColors.onSurface,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
