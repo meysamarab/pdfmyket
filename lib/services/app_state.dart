@@ -42,7 +42,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> _initBilling() async {
     await BillingService.init();
-    _isSubscribed = await BillingService.checkSubscriptionStatus();
+    _isSubscribed = await BillingService.checkPremiumStatus();
     notifyListeners();
   }
 
@@ -71,7 +71,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> refreshSubscription() async {
-    _isSubscribed = await BillingService.checkSubscriptionStatus();
+    _isSubscribed = await BillingService.checkPremiumStatus();
     notifyListeners();
   }
 

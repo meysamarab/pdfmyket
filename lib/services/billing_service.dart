@@ -1,46 +1,57 @@
 import 'package:flutter_poolakey/flutter_poolakey.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 class BillingService {
-  // Placeholder RSA Key. User must replace this from Cafe Bazaar panel.
+  // RSA Public Key from Bazaar Panel.
   static const String _rsaKey = 'MIHNMA0GCSqGSIb3DQEBAQUAA4G7ADCBtwKBywCWpYyS/mJ9...'; 
-  static const String annualSubscriptionId = 'annual_sub_pdf';
+  static const String premiumId = 'annual_sub_pdf';
+  static const String _premiumCacheKey = 'is_premium';
 
+  /// Connect to Bazaar service
   static Future<bool> init() async {
     try {
-      await FlutterPoolakey.connect(
-        _rsaKey,
-        onSucceed: () => debugPrint('Poolakey: Connected'),
-        onFailed: (e) => debugPrint('Poolakey: Connection Failed - $e'),
-        onDisconnected: () => debugPrint('Poolakey: Disconnected'),
-      );
-      return true;
+      return await FlutterPoolakey.connect(_rsaKey);
     } catch (e) {
-      debugPrint('Poolakey Connect Error: $e');
+      debugPrint("Poolakey Connection Failed: $e");
       return false;
     }
   }
 
-  /// Check if user has an active annual subscription
-  static Future<bool> checkSubscriptionStatus() async {
+  /// Check if user is premium (checks cache first, then Bazaar API)
+  static Future<bool> checkPremiumStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // 1. Check local cache for offline support
+    if (prefs.getBool(_premiumCacheKey) ?? false) return true;
+
     try {
-      final subscriptions = await FlutterPoolakey.getAllSubscribedProducts();
-      return subscriptions.any((p) => p.productId == annualSubscriptionId);
+      // 2. Verify with Bazaar API
+      // getAllPurchasedProducts returns both one-time purchases and active subscriptions
+      final purchases = await FlutterPoolakey.getAllPurchasedProducts();
+      bool active = purchases.any((p) => p.productId == premiumId);
+      
+      // 3. Update cache
+      await prefs.setBool(_premiumCacheKey, active);
+      return active;
     } catch (e) {
-      debugPrint('Check Subscription Error: $e');
+      debugPrint("Error checking purchases: $e");
       return false;
     }
   }
 
-  /// Start the subscription process
+  /// Launch Subscription Flow
   static Future<bool> purchaseSubscription() async {
     try {
-      final purchaseInfo = await FlutterPoolakey.subscribe(
-        annualSubscriptionId,
-      );
-      return purchaseInfo.productId == annualSubscriptionId;
+      final result = await FlutterPoolakey.subscribe(premiumId);
+      if (result.productId == premiumId) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_premiumCacheKey, true);
+        return true;
+      }
+      return false;
     } catch (e) {
-      debugPrint('Purchase Error: $e');
+      debugPrint("Subscription Purchase Failed: $e");
       return false;
     }
   }

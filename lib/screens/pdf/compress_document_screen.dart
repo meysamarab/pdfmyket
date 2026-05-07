@@ -259,6 +259,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
