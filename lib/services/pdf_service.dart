@@ -394,7 +394,7 @@ class PdfService {
     return await FileSaver.instance.saveFile(
       name: fileName,
       bytes: bytes,
-      ext: extension,
+      fileExtension: extension,
       mimeType: mimeType,
     );
   }
