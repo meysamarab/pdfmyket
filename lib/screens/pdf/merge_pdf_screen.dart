@@ -119,7 +119,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('ادغام فایل‌های PDF', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
@@ -151,7 +151,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.primary.withOpacity(0.1)),
                       ),
@@ -188,7 +188,15 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('فایل‌های اخیر برنامه', style: TextStyle(fontWeight: FontWeight.bold)),
-                      if (recentPdfFiles.isEmpty) const Text('فایلی یافت نشد', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      TextButton.icon(
+                        onPressed: _pickExternalPdf,
+                        icon: const Icon(Icons.file_open_outlined, size: 18),
+                        label: const Text('افزودن فایل شخصی', style: TextStyle(fontSize: 12)),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -202,10 +210,17 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                             Icon(Icons.picture_as_pdf_outlined, size: 48, color: Colors.grey.withOpacity(0.3)),
                             const SizedBox(height: 12),
                             const Text('فایل اخیری وجود ندارد', style: TextStyle(color: Colors.grey)),
-                            TextButton.icon(
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
                               onPressed: _pickExternalPdf, 
                               icon: const Icon(Icons.add), 
-                              label: const Text('انتخاب از حافظه گوشی')
+                              label: const Text('انتخاب فایل از حافظه گوشی'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary.withOpacity(0.1),
+                                foregroundColor: AppColors.primary,
+                                elevation: 0,
+                                minimumSize: const Size(200, 48),
+                              ),
                             ),
                           ],
                         ),
@@ -219,7 +234,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 8),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).cardColor,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.5),

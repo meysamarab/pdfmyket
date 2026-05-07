@@ -11,6 +11,7 @@ class AppState extends ChangeNotifier {
   List<FileItem> _recentFiles = [];
   int _currentTabIndex = 0;
   String? _defaultStoragePath;
+  ThemeMode _themeMode = ThemeMode.light;
 
   bool _isPremium = false;
   bool _watermarkTrialUsed = false;
@@ -28,6 +29,7 @@ class AppState extends ChangeNotifier {
   List<FileItem> get recentFiles => _recentFiles;
   int get currentTabIndex => _currentTabIndex;
   String? get defaultStoragePath => _defaultStoragePath;
+  ThemeMode get themeMode => _themeMode;
 
   void setTabIndex(int index) {
     _currentTabIndex = index;
@@ -52,6 +54,15 @@ class AppState extends ChangeNotifier {
     _watermarkTrialUsed = prefs.getBool('watermarkTrialUsed') ?? false;
     _mergeTrialUsed = prefs.getBool('mergeTrialUsed') ?? false;
     _adjustTrialUsed = prefs.getBool('adjustTrialUsed') ?? false;
+    final themeIndex = prefs.getInt('themeMode') ?? 1; // 1 = light, 2 = dark
+    _themeMode = ThemeMode.values[themeIndex];
+    notifyListeners();
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('themeMode', mode.index);
     notifyListeners();
   }
 

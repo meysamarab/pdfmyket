@@ -20,10 +20,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
     return MaterialApp(
       title: 'StitchSwift PDF',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: appState.themeMode,
       // Default to Persian if needed, but here we support both
       locale: const Locale('fa', 'IR'), 
       supportedLocales: const [

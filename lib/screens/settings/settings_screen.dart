@@ -21,9 +21,9 @@ class SettingsScreen extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -52,6 +52,23 @@ class SettingsScreen extends StatelessWidget {
             _buildSectionTitle('عمومی'),
             const SizedBox(height: 8),
             _buildSettingsCard([
+              _SettingsItem(
+                icon: appState.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode,
+                title: 'حالت شب',
+                subtitle: appState.themeMode == ThemeMode.dark ? 'فعال' : 'غیرفعال',
+                trailing: Switch(
+                  value: appState.themeMode == ThemeMode.dark,
+                  onChanged: (val) {
+                    appState.setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
+                  },
+                  activeColor: AppColors.primary,
+                ),
+                onTap: () {
+                  appState.setThemeMode(
+                    appState.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark
+                  );
+                },
+              ),
               _SettingsItem(
                 icon: Icons.language,
                 title: 'زبان',
@@ -214,11 +231,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingsCard(List<_SettingsItem> items) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -254,9 +272,9 @@ class SettingsScreen extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       )
                     : null,
-                trailing: item.onTap != null
+                trailing: item.trailing ?? (item.onTap != null
                     ? const Icon(Icons.chevron_left, color: AppColors.outline, size: 20)
-                    : null,
+                    : null),
                 onTap: item.onTap,
               ),
               if (index < items.length - 1)
@@ -277,12 +295,14 @@ class _SettingsItem {
   final IconData icon;
   final String title;
   final String? subtitle;
+  final Widget? trailing;
   final VoidCallback? onTap;
 
   _SettingsItem({
     required this.icon,
     required this.title,
     this.subtitle,
+    this.trailing,
     this.onTap,
   });
 }

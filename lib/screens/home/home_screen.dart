@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -53,28 +53,51 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 10),
               // Header: Logo and Name
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      Text(
-                        'سی‌سی‌اسکنر',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 28),
                       ),
-                      Text(
-                        'CCScaner',
-                        style: TextStyle(fontSize: 14, color: AppColors.primary, fontWeight: FontWeight.w600),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'سی‌سی‌اسکنر',
+                            style: TextStyle(
+                              fontSize: 18, 
+                              fontWeight: FontWeight.bold, 
+                              color: Theme.of(context).textTheme.bodyLarge?.color
+                            ),
+                          ),
+                          const Text(
+                            'CCScaner',
+                            style: TextStyle(fontSize: 14, color: AppColors.primary, fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
                     ],
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      final appState = Provider.of<AppState>(context, listen: false);
+                      appState.setThemeMode(
+                        appState.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark
+                      );
+                    },
+                    icon: Icon(
+                      Provider.of<AppState>(context).themeMode == ThemeMode.dark 
+                        ? Icons.dark_mode 
+                        : Icons.light_mode,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -194,7 +217,7 @@ class HomeScreen extends StatelessWidget {
             height: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 1.5),
               boxShadow: [
@@ -266,7 +289,7 @@ class HomeScreen extends StatelessWidget {
             final file = state.recentFiles[index];
             return Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),

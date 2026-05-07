@@ -147,7 +147,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
@@ -158,9 +158,9 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -196,9 +196,9 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
             _buildSectionTitle('خروجی مخصوص بارگذاری (کاهش حجم)', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
             const SizedBox(height: 16),
             _buildProfileOption('استاندارد (کیفیت بالا)', 'بدون کاهش حجم اضافی', PdfExportProfile.standard, Icons.high_quality),
-            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance, isPremium: true),
-            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language, isPremium: true),
-            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
+            _buildProfileOption('وب‌سایت‌های دولتی', null, PdfExportProfile.government, Icons.account_balance, isPremium: true),
+            _buildProfileOption('سفارت‌ها', null, PdfExportProfile.embassy, Icons.language, isPremium: true),
+            _buildProfileOption('حداکثر کاهش حجم', null, PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
 
             const SizedBox(height: 32),
             _buildSectionTitle('محل ذخیره', 'انتخاب کنید فایل کجا ذخیره شود'),
@@ -267,18 +267,19 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
     );
   }
 
-  Widget _buildProfileOption(String title, String subtitle, PdfExportProfile profile, IconData icon, {bool isPremium = false}) {
+  Widget _buildProfileOption(String title, String? subtitle, PdfExportProfile profile, IconData icon, {bool isPremium = false}) {
     final isSelected = _selectedProfile == profile;
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () => setState(() => _selectedProfile = profile),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.white,
+          color: isSelected ? AppColors.primary.withOpacity(0.05) : theme.cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.3),
+            color: isSelected ? AppColors.primary : theme.dividerColor.withOpacity(0.1),
           ),
         ),
         child: Row(
@@ -289,8 +290,9 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.primary : AppColors.onSurface)),
-                  Text(subtitle, style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.primary : theme.textTheme.bodyLarge?.color)),
+                  if (subtitle != null)
+                    Text(subtitle, style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
                 ],
               ),
             ),

@@ -33,4 +33,14 @@ class AppColors {
   static const Color surfaceContainerHighest = Color(0xFFDEE5E1);
 
   static const Color white = Colors.white;
+
+  // Dark Mode Colors
+  static const Color primaryDark = Color(0xFF00B27A);
+  static const Color onPrimaryDark = Colors.black;
+  static const Color backgroundDark = Color(0xFF121413);
+  static const Color surfaceDark = Color(0xFF1E2120);
+  static const Color onSurfaceDark = Color(0xFFE2E3E1);
+  static const Color onSurfaceVariantDark = Color(0xFFBFC9C4);
+  static const Color outlineDark = Color(0xFF89938F);
+  static const Color outlineVariantDark = Color(0xFF3F4945);
 }

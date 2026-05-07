@@ -33,9 +33,9 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(24),
         ),
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
         child: Column(
@@ -264,7 +264,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
@@ -275,9 +275,9 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -293,7 +293,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.primary.withOpacity(0.2)),
                   boxShadow: [
@@ -352,10 +352,10 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
             const SizedBox(height: 32),
             _buildSectionTitle('تنظیمات کاهش حجم', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
             const SizedBox(height: 16),
-            _buildProfileOption('استاندارد (کیفیت بالا)', 'بدون کاهش حجم اضافی', PdfExportProfile.standard, Icons.high_quality),
-            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance, isPremium: true),
-            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language, isPremium: true),
-            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
+            _buildProfileOption('استاندارد (کیفیت بالا)', PdfExportProfile.standard, Icons.high_quality),
+            _buildProfileOption('وب‌سایت‌های دولتی', PdfExportProfile.government, Icons.account_balance, isPremium: true),
+            _buildProfileOption('سفارت‌ها', PdfExportProfile.embassy, Icons.language, isPremium: true),
+            _buildProfileOption('حداکثر کاهش حجم', PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
 
             const SizedBox(height: 24),
             SwitchListTile(
@@ -428,7 +428,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
+          color: isSelected ? AppColors.primary : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.5)),
           boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))] : [],
@@ -446,7 +446,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
     );
   }
 
-  Widget _buildProfileOption(String title, String subtitle, PdfExportProfile profile, IconData icon, {bool isPremium = false}) {
+  Widget _buildProfileOption(String title, PdfExportProfile profile, IconData icon, {bool isPremium = false}) {
     final isSelected = _selectedProfile == profile;
     return InkWell(
       onTap: () => setState(() => _selectedProfile = profile),
@@ -454,7 +454,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.05) : Colors.white,
+          color: isSelected ? AppColors.primary.withOpacity(0.05) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.3),
@@ -465,13 +465,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
             Icon(icon, color: isSelected ? AppColors.primary : AppColors.outline, size: 20),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.primary : AppColors.onSurface)),
-                  Text(subtitle, style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-                ],
-              ),
+              child: Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: isSelected ? AppColors.primary : AppColors.onSurface)),
             ),
             if (isSelected) const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
             if (!isSelected && isPremium) const Icon(Icons.star, color: Colors.amber, size: 18),

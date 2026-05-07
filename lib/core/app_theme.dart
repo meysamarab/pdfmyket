@@ -114,4 +114,59 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: const ColorScheme(
+        brightness: Brightness.dark,
+        primary: AppColors.primaryDark,
+        onPrimary: AppColors.onPrimaryDark,
+        secondary: AppColors.secondary,
+        onSecondary: AppColors.onSecondary,
+        error: AppColors.error,
+        onError: AppColors.onError,
+        background: AppColors.backgroundDark,
+        onBackground: AppColors.onSurfaceDark,
+        surface: AppColors.surfaceDark,
+        onSurface: AppColors.onSurfaceDark,
+        onSurfaceVariant: AppColors.onSurfaceVariantDark,
+        outline: AppColors.outlineDark,
+        outlineVariant: AppColors.outlineVariantDark,
+      ),
+      scaffoldBackgroundColor: AppColors.backgroundDark,
+      textTheme: GoogleFonts.interTextTheme().copyWith(
+        displayLarge: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+        headlineMedium: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+        headlineSmall: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+        bodyLarge: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+        bodyMedium: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+        bodySmall: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+        labelLarge: GoogleFonts.inter(color: AppColors.onSurfaceDark),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryDark,
+          foregroundColor: AppColors.onPrimaryDark,
+          minimumSize: const Size(double.infinity, 54),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.outlineVariantDark, width: 1),
+        ),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        selectedItemColor: AppColors.primaryDark,
+        unselectedItemColor: AppColors.onSurfaceVariantDark,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
 }

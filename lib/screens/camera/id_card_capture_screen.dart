@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_colors.dart';
 import '../../models/file_item.dart';
@@ -28,14 +29,36 @@ class _IdCardCaptureScreenState extends State<IdCardCaptureScreen> {
     );
 
     if (image != null) {
-      setState(() {
-        if (isFront) {
-          _frontPath = image.path;
-        } else {
-          _backPath = image.path;
-        }
-      });
+      final croppedFile = await _cropImage(image.path);
+      if (croppedFile != null) {
+        setState(() {
+          if (isFront) {
+            _frontPath = croppedFile.path;
+          } else {
+            _backPath = croppedFile.path;
+          }
+        });
+      }
     }
+  }
+
+  Future<CroppedFile?> _cropImage(String path) async {
+    return await ImageCropper().cropImage(
+      sourcePath: path,
+      aspectRatio: const CropAspectRatio(ratioX: 8.5, ratioY: 5.4), // Standard ID Card Ratio
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'برش تصویر کارت',
+          toolbarColor: AppColors.primary,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          title: 'برش تصویر کارت',
+        ),
+      ],
+    );
   }
 
   Future<void> _generatePdf() async {
@@ -124,10 +147,10 @@ class _IdCardCaptureScreenState extends State<IdCardCaptureScreen> {
         width: double.infinity,
         height: 180,
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: path != null ? AppColors.primary : Colors.grey[300]!,
+            color: path != null ? AppColors.primary : Theme.of(context).dividerColor.withOpacity(0.1),
             width: 2,
             style: path != null ? BorderStyle.solid : BorderStyle.none,
           ),
