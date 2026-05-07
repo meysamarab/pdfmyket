@@ -14,7 +14,7 @@ class SettingsScreen extends StatelessWidget {
     final String storagePathDisplay = appState.defaultStoragePath ?? 'پوشه CCPdf (پیش‌فرض)';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'تنظیمات',
@@ -51,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
             // General section
             _buildSectionTitle('عمومی'),
             const SizedBox(height: 8),
-            _buildSettingsCard([
+            _buildSettingsCard(context, [
               _SettingsItem(
                 icon: appState.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode,
                 title: 'حالت شب',
@@ -111,7 +111,7 @@ class SettingsScreen extends StatelessWidget {
             // Storage section
             _buildSectionTitle('حافظه'),
             const SizedBox(height: 8),
-            _buildSettingsCard([
+            _buildSettingsCard(context, [
               _SettingsItem(
                 icon: Icons.cleaning_services,
                 title: 'پاک‌سازی کش',
@@ -149,7 +149,7 @@ class SettingsScreen extends StatelessWidget {
             // About section
             _buildSectionTitle('درباره'),
             const SizedBox(height: 8),
-            _buildSettingsCard([
+            _buildSettingsCard(context, [
               _SettingsItem(
                 icon: Icons.info_outline,
                 title: 'نسخه برنامه',
@@ -230,7 +230,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsCard(List<_SettingsItem> items) {
+  Widget _buildSettingsCard(BuildContext context, List<_SettingsItem> items) {
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
