@@ -65,18 +65,18 @@ class MainShell extends StatelessWidget {
       bottomNavigationBar: BottomAppBar(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         height: 70,
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            _buildNavItem(context, icon: Icons.home_rounded, label: 'خانه', index: 0, currentIndex: currentIndex),
-            _buildNavItem(context, icon: Icons.description_outlined, label: 'فایل‌ها', index: 1, currentIndex: currentIndex),
-            const SizedBox(width: 40), // Space for FAB
-            _buildNavItem(context, icon: Icons.history_rounded, label: 'تاریخچه', index: 2, currentIndex: currentIndex),
-            _buildNavItem(context, icon: Icons.settings_outlined, label: 'تنظیمات', index: 3, currentIndex: currentIndex),
+            Expanded(child: _buildNavItem(context, icon: Icons.home_rounded, label: 'خانه', index: 0, currentIndex: currentIndex)),
+            Expanded(child: _buildNavItem(context, icon: Icons.description_outlined, label: 'فایل‌ها', index: 1, currentIndex: currentIndex)),
+            const SizedBox(width: 80), // Space for FAB
+            Expanded(child: _buildNavItem(context, icon: Icons.history_rounded, label: 'تاریخچه', index: 2, currentIndex: currentIndex)),
+            Expanded(child: _buildNavItem(context, icon: Icons.settings_outlined, label: 'تنظیمات', index: 3, currentIndex: currentIndex)),
           ],
         ),
       ),
@@ -93,15 +93,15 @@ class MainShell extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isSelected ? AppColors.primary : Colors.grey,
-            size: 26,
+            color: isSelected ? AppColors.primary : Theme.of(context).iconTheme.color?.withOpacity(0.5) ?? Colors.grey,
+            size: 24,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? AppColors.primary : Colors.grey,
-              fontSize: 11,
+              color: isSelected ? AppColors.primary : Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6) ?? Colors.grey,
+              fontSize: 10,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),

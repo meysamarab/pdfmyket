@@ -11,7 +11,6 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
-    final String storagePathDisplay = appState.defaultStoragePath ?? 'پوشه CCPdf (پیش‌فرض)';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -69,44 +68,7 @@ class SettingsScreen extends StatelessWidget {
                   );
                 },
               ),
-              _SettingsItem(
-                icon: Icons.language,
-                title: 'زبان',
-                subtitle: 'فارسی',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('در نسخه‌های بعدی فعال خواهد شد')),
-                  );
-                },
-              ),
-              _SettingsItem(
-                icon: Icons.folder,
-                title: 'محل ذخیره‌سازی پیش‌فرض',
-                subtitle: storagePathDisplay,
-                onTap: () async {
-                  final hasPermission = await FileStorageService.requestPermissions();
-                  if (!hasPermission && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('برای انتخاب محل ذخیره، نیاز به دسترسی حافظه است')),
-                    );
-                    return;
-                  }
-                  final String? result = await FilePicker.platform.getDirectoryPath(
-                    dialogTitle: 'انتخاب محل ذخیره پیش‌فرض',
-                  );
-                  if (result != null) {
-                    await appState.setDefaultStoragePath(result);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('محل ذخیره‌سازی پیش‌فرض تغییر کرد')),
-                      );
-                    }
-                  }
-                },
-              ),
             ]),
-
-            const SizedBox(height: 24),
 
             // Storage section
             _buildSectionTitle('حافظه'),

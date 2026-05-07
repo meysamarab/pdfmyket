@@ -26,16 +26,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'تاریخچه',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -89,9 +89,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const Text(
               'هنوز فایلی ساخته نشده',
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -115,7 +113,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
         boxShadow: [

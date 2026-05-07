@@ -35,16 +35,16 @@ class _FilesScreenState extends State<FilesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'فایل‌های من',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
       ),
       body: Column(
         children: [
@@ -90,14 +90,16 @@ class _FilesScreenState extends State<FilesScreen> {
 
   Widget _buildHeader() {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         children: [
           // Search Bar
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLow,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white.withOpacity(0.05) 
+                  : AppColors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(12),
             ),
             child: TextField(
@@ -150,7 +152,9 @@ class _FilesScreenState extends State<FilesScreen> {
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         fontSize: 13,
       ),
-      backgroundColor: AppColors.surfaceContainerLow,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark 
+          ? Colors.white.withOpacity(0.05) 
+          : AppColors.surfaceContainerLow,
       checkmarkColor: AppColors.primary,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       side: BorderSide(
@@ -186,7 +190,7 @@ class _FilesScreenState extends State<FilesScreen> {
             const SizedBox(height: 24),
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color),
             ),
             const SizedBox(height: 8),
             Text(
@@ -206,7 +210,7 @@ class _FilesScreenState extends State<FilesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
         boxShadow: [
@@ -223,7 +227,9 @@ class _FilesScreenState extends State<FilesScreen> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: isPdf ? const Color(0xFFFFEBEE) : const Color(0xFFE3F2FD),
+            color: isPdf 
+                ? (Theme.of(context).brightness == Brightness.dark ? Colors.red.withOpacity(0.1) : const Color(0xFFFFEBEE)) 
+                : (Theme.of(context).brightness == Brightness.dark ? Colors.blue.withOpacity(0.1) : const Color(0xFFE3F2FD)),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -271,7 +277,7 @@ class _FilesScreenState extends State<FilesScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).dividerColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

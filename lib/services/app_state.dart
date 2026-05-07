@@ -10,7 +10,7 @@ class AppState extends ChangeNotifier {
   double _processingProgress = 0.0;
   List<FileItem> _recentFiles = [];
   int _currentTabIndex = 0;
-  String? _defaultStoragePath;
+  int _recentFilesLimit = 50;
   ThemeMode _themeMode = ThemeMode.light;
 
   bool _isPremium = false;
@@ -28,7 +28,6 @@ class AppState extends ChangeNotifier {
   double get processingProgress => _processingProgress;
   List<FileItem> get recentFiles => _recentFiles;
   int get currentTabIndex => _currentTabIndex;
-  String? get defaultStoragePath => _defaultStoragePath;
   ThemeMode get themeMode => _themeMode;
 
   void setTabIndex(int index) {
@@ -50,7 +49,6 @@ class AppState extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    _defaultStoragePath = prefs.getString('defaultStoragePath');
     _watermarkTrialUsed = prefs.getBool('watermarkTrialUsed') ?? false;
     _mergeTrialUsed = prefs.getBool('mergeTrialUsed') ?? false;
     _adjustTrialUsed = prefs.getBool('adjustTrialUsed') ?? false;
@@ -105,22 +103,12 @@ class AppState extends ChangeNotifier {
     return false;
   }
 
-  Future<void> setDefaultStoragePath(String? path) async {
-    _defaultStoragePath = path;
-    final prefs = await SharedPreferences.getInstance();
-    if (path == null) {
-      await prefs.remove('defaultStoragePath');
-    } else {
-      await prefs.setString('defaultStoragePath', path);
-    }
-    await loadRecentFiles(); // Reload files from new path
-    notifyListeners();
-  }
+  /// Removed setDefaultStoragePath as we use Downloads folder via file_saver
 
   /// Load recent files from the current storage directory
   Future<void> loadRecentFiles() async {
     try {
-      _recentFiles = await FileStorageService.listFiles(customPath: _defaultStoragePath);
+      _recentFiles = await FileStorageService.listFiles();
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading recent files: $e');

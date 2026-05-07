@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path/path.dart' as p;
 import 'package:printing/printing.dart';
 import 'package:image/image.dart' as img;
+import 'package:file_saver/file_saver.dart';
 import 'file_storage_service.dart';
 
 enum PdfExportProfile {
@@ -55,11 +56,21 @@ class PdfService {
       );
     }
 
-    final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
-    final file = File(p.join(dirPath, '$fileName.pdf'));
-
+    final pdfBytes = await pdf.save();
     
-    await file.writeAsBytes(await pdf.save());
+    // Save to Downloads folder
+    await saveFileToDownloads(
+      bytes: pdfBytes,
+      fileName: fileName,
+      extension: 'pdf',
+      mimeType: MimeType.pdf,
+    );
+
+    // Also save a copy to app's internal storage for "Recent Files" list
+    final dir = await FileStorageService.getCCPdfDirectory();
+    final file = File(p.join(dir.path, '$fileName.pdf'));
+    await file.writeAsBytes(pdfBytes);
+    
     return file;
   }
 
@@ -125,11 +136,21 @@ class PdfService {
       ),
     );
 
-    final dirPath = customDirectory ?? (await FileStorageService.getCCPdfDirectory()).path;
-    final file = File(p.join(dirPath, '$fileName.pdf'));
+    final pdfBytes = await pdf.save();
 
+    // Save to Downloads folder
+    await saveFileToDownloads(
+      bytes: pdfBytes,
+      fileName: fileName,
+      extension: 'pdf',
+      mimeType: MimeType.pdf,
+    );
+
+    // Also save a copy to app's internal storage for "Recent Files" list
+    final dir = await FileStorageService.getCCPdfDirectory();
+    final file = File(p.join(dir.path, '$fileName.pdf'));
+    await file.writeAsBytes(pdfBytes);
     
-    await file.writeAsBytes(await pdf.save());
     return file;
   }
 
@@ -153,9 +174,21 @@ class PdfService {
       }
     }
 
+    final pdfBytes = await pdf.save();
+
+    // Save to Downloads folder
+    await saveFileToDownloads(
+      bytes: pdfBytes,
+      fileName: outputName,
+      extension: 'pdf',
+      mimeType: MimeType.pdf,
+    );
+
+    // Also save a copy to app's internal storage for "Recent Files" list
     final dir = await FileStorageService.getCCPdfDirectory();
     final file = File(p.join(dir.path, '$outputName.pdf'));
-    await file.writeAsBytes(await pdf.save());
+    await file.writeAsBytes(pdfBytes);
+    
     return file;
   }
 
@@ -198,9 +231,19 @@ class PdfService {
         ),
       );
 
-      final file = File(p.join(dirPath, '${baseName}_${i + 1}.pdf'));
+      final pdfBytes = await pdf.save();
+      final fileName = '${baseName}_${i + 1}';
 
-      await file.writeAsBytes(await pdf.save());
+      // Save to Downloads
+      await saveFileToDownloads(
+        bytes: pdfBytes,
+        fileName: fileName,
+        extension: 'pdf',
+        mimeType: MimeType.pdf,
+      );
+
+      final file = File(p.join(dirPath, '$fileName.pdf'));
+      await file.writeAsBytes(pdfBytes);
       files.add(file);
     }
 
@@ -218,7 +261,17 @@ class PdfService {
       if (addWatermark) {
         processedBytes = _addWatermarkToImage(processedBytes);
       }
-      final file = File(p.join(dirPath, '${baseName}_${i + 1}.jpg'));
+      final fileName = '${baseName}_${i + 1}';
+
+      // Save to Downloads
+      await saveFileToDownloads(
+        bytes: processedBytes,
+        fileName: fileName,
+        extension: 'jpg',
+        mimeType: MimeType.jpeg,
+      );
+
+      final file = File(p.join(dirPath, '$fileName.jpg'));
       await file.writeAsBytes(processedBytes);
       files.add(file);
     }
@@ -329,6 +382,21 @@ class PdfService {
     }
 
     return Uint8List.fromList(img.encodeJpg(resized, quality: quality));
+  }
+
+  /// Save bytes to device downloads folder using file_saver
+  static Future<String?> saveFileToDownloads({
+    required Uint8List bytes,
+    required String fileName,
+    required String extension,
+    MimeType mimeType = MimeType.other,
+  }) async {
+    return await FileSaver.instance.saveFile(
+      name: fileName,
+      bytes: bytes,
+      ext: extension,
+      mimeType: mimeType,
+    );
   }
 }
 

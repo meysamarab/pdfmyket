@@ -24,7 +24,6 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
   List<String> _selectedFilePaths = [];
   bool _isPdf = false;
   PdfExportProfile _selectedProfile = PdfExportProfile.government;
-  bool _isCustomLocationEnabled = false;
   String _outputFormat = 'PDF'; // PDF or Image
   bool _removeWatermark = false;
 
@@ -146,16 +145,6 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
       return;
     }
 
-    String? customPath;
-    if (_isCustomLocationEnabled) {
-      customPath = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'انتخاب محل ذخیره فایل',
-      );
-      if (customPath == null) return;
-    } else {
-      customPath = appState.defaultStoragePath;
-    }
-
     if (!mounted) return;
     
     Navigator.push(
@@ -176,7 +165,6 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
           tempPaths, 
           baseName,
           profile: _selectedProfile,
-          customDirectory: customPath,
           addWatermark: !_removeWatermark,
         );
 
@@ -191,7 +179,6 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
             _selectedFilePaths, 
             baseName,
             profile: _selectedProfile,
-            customDirectory: customPath,
             addWatermark: !_removeWatermark,
           );
         } else {
@@ -200,7 +187,6 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
             _selectedFilePaths, 
             baseName,
             profile: _selectedProfile,
-            customDirectory: customPath,
           );
           if (processedImages.isNotEmpty) {
             resultFile = processedImages.first; // Return first one for result screen
@@ -379,14 +365,6 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
               contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 12),
-            SwitchListTile(
-              value: _isCustomLocationEnabled,
-              onChanged: (val) => setState(() => _isCustomLocationEnabled = val),
-              title: const Text('انتخاب محل ذخیره توسط من', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-              subtitle: const Text('اگر غیرفعال باشد، در پوشه CCPdf ذخیره می‌شود', style: TextStyle(fontSize: 12)),
-              activeColor: AppColors.primary,
-              contentPadding: EdgeInsets.zero,
-            ),
             
             const SizedBox(height: 40),
             

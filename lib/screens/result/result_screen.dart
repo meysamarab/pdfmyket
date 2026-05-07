@@ -157,7 +157,7 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
@@ -174,9 +174,9 @@ class _ResultScreenState extends State<ResultScreen> {
             onPressed: () {},
           ),
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -194,9 +194,9 @@ class _ResultScreenState extends State<ResultScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
+                color: Theme.of(context).cardColor.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.4)),
+                border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF27AE60).withOpacity(0.1),
@@ -213,9 +213,9 @@ class _ResultScreenState extends State<ResultScreen> {
                         width: 96,
                         height: 96,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey[100]!),
+                          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
                         ),
                         child: const Icon(
                           Icons.description,
@@ -265,10 +265,10 @@ class _ResultScreenState extends State<ResultScreen> {
               textAlign: TextAlign.center,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppColors.surfaceContainerLowest,
+                fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.outlineVariant),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
                 ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.edit, size: 20),
@@ -330,7 +330,7 @@ class _ResultScreenState extends State<ResultScreen> {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: isError ? AppColors.error.withOpacity(0.05) : AppColors.surfaceContainerLowest,
+          color: isError ? AppColors.error.withOpacity(0.05) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isError ? AppColors.error.withOpacity(0.3) : AppColors.outlineVariant.withOpacity(0.3),
@@ -350,7 +350,7 @@ class _ResultScreenState extends State<ResultScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: isError ? AppColors.error : AppColors.onSurface,
+                color: isError ? AppColors.error : Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
           ],

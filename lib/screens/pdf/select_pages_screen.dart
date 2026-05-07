@@ -132,9 +132,9 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
               ),
             ),
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         elevation: 0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: Theme.of(context).cardColor,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -170,10 +170,10 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? AppColors.primary : AppColors.outlineVariant.withOpacity(0.5),
+                            color: isSelected ? AppColors.primary : Theme.of(context).dividerColor.withOpacity(0.1),
                             width: isSelected ? 2 : 1,
                           ),
                           boxShadow: [
@@ -229,10 +229,10 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -4)),
+                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -4)),
                       ],
                     ),
                     child: Column(
@@ -267,11 +267,11 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
                   child: Container(
                     padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + MediaQuery.of(context).padding.bottom),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(top: BorderSide(color: AppColors.outlineVariant.withOpacity(0.5))),
+                      color: Theme.of(context).cardColor,
+                      border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 24,
                           offset: const Offset(0, -8),
                         ),
@@ -302,9 +302,9 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
+          color: isSelected ? AppColors.primary : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+          border: Border.all(color: isSelected ? AppColors.primary : Theme.of(context).dividerColor.withOpacity(0.2)),
         ),
         child: Row(
           children: [
@@ -315,7 +315,7 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.onSurface,
+                color: isSelected ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

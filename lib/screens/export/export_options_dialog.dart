@@ -22,7 +22,6 @@ class ExportOptionsDialog extends StatefulWidget {
 class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   String _exportMode = 'Single'; // Single PDF or Separate PDFs
   PdfExportProfile _selectedProfile = PdfExportProfile.standard;
-  bool _isCustomLocationEnabled = false;
   bool _removeWatermark = false;
 
   Future<void> _handleExport() async {
@@ -45,17 +44,6 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
       );
     }
 
-    String? customPath;
-    if (_isCustomLocationEnabled) {
-      customPath = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'انتخاب محل ذخیره فایل',
-      );
-      if (customPath == null) return; // User cancelled
-    } else {
-      // Use global default if set
-      customPath = appState.defaultStoragePath;
-    }
-
     if (!mounted) return;
     
     Navigator.push(
@@ -71,7 +59,6 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
           appState.selectedImagePaths, 
           baseName,
           profile: _selectedProfile,
-          customDirectory: customPath,
           addWatermark: !_removeWatermark,
         );
         
@@ -103,7 +90,6 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
           appState.selectedImagePaths, 
           baseName,
           profile: _selectedProfile,
-          customDirectory: customPath,
         );
         
         FileItem? lastItem;
@@ -201,8 +187,6 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
             _buildProfileOption('حداکثر کاهش حجم', null, PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
 
             const SizedBox(height: 32),
-            _buildSectionTitle('محل ذخیره', 'انتخاب کنید فایل کجا ذخیره شود'),
-            const SizedBox(height: 12),
             const SizedBox(height: 12),
             SwitchListTile(
               value: _removeWatermark,
@@ -225,14 +209,6 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
               contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 12),
-            SwitchListTile(
-              value: _isCustomLocationEnabled,
-              onChanged: (val) => setState(() => _isCustomLocationEnabled = val),
-              title: const Text('انتخاب محل ذخیره توسط من', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-              subtitle: const Text('اگر غیرفعال باشد، در پوشه CCPdf ذخیره می‌شود', style: TextStyle(fontSize: 12)),
-              activeColor: AppColors.primary,
-              contentPadding: EdgeInsets.zero,
-            ),
             
             const SizedBox(height: 40),
             
