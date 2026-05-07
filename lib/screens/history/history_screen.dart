@@ -86,7 +86,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'هنوز فایلی ساخته نشده',
               style: TextStyle(
                 color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.onSurface,

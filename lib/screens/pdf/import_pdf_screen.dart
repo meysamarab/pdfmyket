@@ -87,7 +87,7 @@ class _ImportPdfScreenState extends State<ImportPdfScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text(
+                    Text(
                       'انتخاب فایل پی‌دی‌اف',
                       style: TextStyle(
                         color: Theme.of(context).textTheme.bodyLarge?.color,
