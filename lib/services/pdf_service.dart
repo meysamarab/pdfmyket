@@ -5,8 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path/path.dart' as p;
 import 'package:printing/printing.dart';
 import 'package:image/image.dart' as img;
-import 'package:cr_file_saver/cr_file_saver.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:file_saver/file_saver.dart';
 import 'file_storage_service.dart';
 
 enum PdfExportProfile {
@@ -64,6 +63,7 @@ class PdfService {
       bytes: pdfBytes,
       fileName: fileName,
       extension: 'pdf',
+      mimeType: MimeType.pdf,
     );
 
     // Also save a copy to app's internal storage for "Recent Files" list
@@ -143,6 +143,7 @@ class PdfService {
       bytes: pdfBytes,
       fileName: fileName,
       extension: 'pdf',
+      mimeType: MimeType.pdf,
     );
 
     // Also save a copy to app's internal storage for "Recent Files" list
@@ -180,6 +181,7 @@ class PdfService {
       bytes: pdfBytes,
       fileName: outputName,
       extension: 'pdf',
+      mimeType: MimeType.pdf,
     );
 
     // Also save a copy to app's internal storage for "Recent Files" list
@@ -237,6 +239,7 @@ class PdfService {
         bytes: pdfBytes,
         fileName: fileName,
         extension: 'pdf',
+        mimeType: MimeType.pdf,
       );
 
       final file = File(p.join(dirPath, '$fileName.pdf'));
@@ -265,6 +268,7 @@ class PdfService {
         bytes: processedBytes,
         fileName: fileName,
         extension: 'jpg',
+        mimeType: MimeType.jpeg,
       );
 
       final file = File(p.join(dirPath, '$fileName.jpg'));
@@ -380,29 +384,19 @@ class PdfService {
     return Uint8List.fromList(img.encodeJpg(resized, quality: quality));
   }
 
-  /// Save bytes to device downloads folder using cr_file_saver
+  /// Save bytes to device downloads folder using file_saver
   static Future<String?> saveFileToDownloads({
     required Uint8List bytes,
     required String fileName,
     required String extension,
+    MimeType mimeType = MimeType.other,
   }) async {
-    // 1. Save to temp first
-    final tempDir = await getTemporaryDirectory();
-    final fullFileName = '$fileName.$extension';
-    final tempFile = File(p.join(tempDir.path, fullFileName));
-    await tempFile.writeAsBytes(bytes);
-
-    // 2. Use CRFileSaver to copy to public Downloads
-    try {
-      final result = await CRFileSaver.saveFile(
-        tempFile.path,
-        destinationFileName: fullFileName,
-      );
-      return result;
-    } catch (e) {
-      print('CRFileSaver error: $e');
-      return null;
-    }
+    return await FileSaver.instance.saveFile(
+      name: fileName,
+      bytes: bytes,
+      fileExtension: extension,
+      mimeType: mimeType,
+    );
   }
 }
 
