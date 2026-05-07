@@ -10,7 +10,7 @@ import '../../models/file_item.dart';
 import '../../services/file_storage_service.dart';
 import '../common/processing_screen.dart';
 import '../result/result_screen.dart';
-import '../common/subscription_dialog.dart';
+
 
 class CompressDocumentScreen extends StatefulWidget {
   const CompressDocumentScreen({super.key});
@@ -127,14 +127,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
 
     final appState = Provider.of<AppState>(context, listen: false);
 
-    // Subscription Checks
-    final bool needsSubForWatermark = _removeWatermark && !appState.canUseFeature('watermark');
-    final bool needsSubForAdjust = !appState.canUseFeature('adjust');
 
-    if (needsSubForWatermark || needsSubForAdjust) {
-      SubscriptionDialog.show(context);
-      return;
-    }
 
     final hasPermission = await FileStorageService.requestPermissions();
     if (!hasPermission && mounted) {
@@ -219,12 +212,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
       }
       
       if (resultFile != null) {
-        if (!appState.isSubscribed) {
-          appState.setTrialUsed('adjust');
-          if (_removeWatermark) {
-            appState.setTrialUsed('watermark');
-          }
-        }
+
 
         final fileItem = FileItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -362,12 +350,7 @@ class _CompressDocumentScreenState extends State<CompressDocumentScreen> {
                 children: [
                   const Text('حذف واترمارک برنامه', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                   const SizedBox(width: 8),
-                  if (!appState.isSubscribed) 
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(4)),
-                      child: const Text('ویژه', style: TextStyle(fontSize: 10, color: Colors.amber, fontWeight: FontWeight.bold)),
-                    ),
+
                 ],
               ),
               subtitle: const Text('حذف متن "Created by CCScaner" از فایل نهایی', style: TextStyle(fontSize: 12)),

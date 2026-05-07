@@ -9,7 +9,7 @@ import '../../models/file_item.dart';
 import '../../services/file_storage_service.dart';
 import '../common/processing_screen.dart';
 import '../result/result_screen.dart';
-import '../common/subscription_dialog.dart';
+
 
 class ExportOptionsDialog extends StatefulWidget {
   const ExportOptionsDialog({super.key});
@@ -27,10 +27,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   Future<void> _handleExport() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
-    if (_removeWatermark && !appState.canUseFeature('watermark')) {
-      SubscriptionDialog.show(context);
-      return;
-    }
+
 
     final hasPermission = await FileStorageService.requestPermissions();
     if (!hasPermission && mounted) {
@@ -80,9 +77,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
 
         appState.addRecentFile(fileItem);
         
-        if (!appState.isSubscribed && _removeWatermark) {
-          appState.setTrialUsed('watermark');
-        }
+
         
         if (mounted) {
           Navigator.pushReplacement(
@@ -112,9 +107,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
           appState.addRecentFile(lastItem);
         }
 
-        if (!appState.isSubscribed && _removeWatermark) {
-          appState.setTrialUsed('watermark');
-        }
+
 
         if (mounted && lastItem != null) {
           Navigator.pushReplacement(
@@ -204,12 +197,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
                 children: [
                   const Text('حذف واترمارک برنامه', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                   const SizedBox(width: 8),
-                  if (!appState.isSubscribed) 
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(4)),
-                      child: const Text('ویژه', style: TextStyle(fontSize: 10, color: Colors.amber, fontWeight: FontWeight.bold)),
-                    ),
+
                 ],
               ),
               subtitle: const Text('حذف متن "Created by CCScaner" از فایل نهایی', style: TextStyle(fontSize: 12)),

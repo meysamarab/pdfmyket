@@ -7,7 +7,7 @@ import '../../models/file_item.dart';
 import '../../services/app_state.dart';
 import '../../services/pdf_service.dart';
 import '../result/result_screen.dart';
-import '../common/subscription_dialog.dart';
+
 
 class MergePdfScreen extends StatefulWidget {
   const MergePdfScreen({super.key});
@@ -63,10 +63,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
     if (_selectedFiles.length < 2) return;
 
     final appState = Provider.of<AppState>(context, listen: false);
-    if (!appState.canUseFeature('merge')) {
-      SubscriptionDialog.show(context);
-      return;
-    }
+
 
     setState(() => _isMerging = true);
 
@@ -77,9 +74,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
 
       if (mounted) {
         // Mark trial as used if not subscribed
-        if (!appState.isSubscribed) {
-          appState.setTrialUsed('merge');
-        }
+
 
         final fileItem = FileItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
