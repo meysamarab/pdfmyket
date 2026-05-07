@@ -21,6 +21,7 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
   final Set<int> _selectedIndices = {};
   List<Uint8List>? _pageImages;
   bool _isLoading = true;
+  PdfExportProfile _selectedProfile = PdfExportProfile.standard;
 
   @override
   void initState() {
@@ -53,16 +54,18 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
     if (_selectedIndices.isEmpty) return;
     
     final appState = Provider.of<AppState>(context, listen: false);
-    
+    if (_selectedProfile != PdfExportProfile.standard && !appState.canUseFeature('adjust')) {
+      SubscriptionDialog.show(context);
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ProcessingScreen()),
     );
 
     try {
-      // For simplicity, we convert all pages then filter or just re-run the render logic
-      // In a real app, we'd only render the selected ones to a temp file.
-      final allImages = await PdfService.pdfToImages(widget.pdfPath);
+      final allImages = await PdfService.pdfToImages(widget.pdfPath, profile: _selectedProfile);
       final selectedFiles = _selectedIndices.map((i) => allImages[i]).toList();
       
       // We only need to show the last one in result screen, or a success message
@@ -217,6 +220,45 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
                   },
                 ),
                 
+                // Compression profiles
+                Positioned(
+                  bottom: 100, // Above the footer
+                  left: 20,
+                  right: 20,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -4)),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('تنظیمات کاهش حجم برای تصاویر خروجی', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        const SizedBox(height: 12),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildMiniProfileOption('استاندارد', PdfExportProfile.standard),
+                              const SizedBox(width: 8),
+                              _buildMiniProfileOption('دولتی', PdfExportProfile.government, isPremium: true),
+                              const SizedBox(width: 8),
+                              _buildMiniProfileOption('سفارت', PdfExportProfile.embassy, isPremium: true),
+                              const SizedBox(width: 8),
+                              _buildMiniProfileOption('حداکثر', PdfExportProfile.maxCompression, isPremium: true),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -249,6 +291,37 @@ class _SelectPagesScreenState extends State<SelectPagesScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildMiniProfileOption(String label, PdfExportProfile profile, {bool isPremium = false}) {
+    final isSelected = _selectedProfile == profile;
+    return InkWell(
+      onTap: () => setState(() => _selectedProfile = profile),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            if (isPremium && !isSelected) ...[
+              const Icon(Icons.star, color: Colors.amber, size: 14),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.onSurface,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

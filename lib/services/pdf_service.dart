@@ -226,8 +226,8 @@ class PdfService {
     return files;
   }
 
-  /// Convert PDF pages to images with watermark using image package
-  static Future<List<File>> pdfToImages(String pdfPath, {bool addWatermark = true}) async {
+  /// Convert PDF pages to images with watermark and optional compression profile
+  static Future<List<File>> pdfToImages(String pdfPath, {PdfExportProfile profile = PdfExportProfile.standard, bool addWatermark = true}) async {
     await FileStorageService.requestPermissions();
     final dir = await FileStorageService.getCCPdfDirectory();
     final bytes = await File(pdfPath).readAsBytes();
@@ -235,13 +235,27 @@ class PdfService {
     final baseName = p.basenameWithoutExtension(pdfPath);
 
     int i = 1;
-    await for (final page in Printing.raster(bytes, dpi: 72)) {
+    await for (final page in Printing.raster(bytes, dpi: 100)) { // Increased DPI for better starting quality
       final pngBytes = await page.toPng();
       
-      // Add watermark to the image if requested
-      final finalBytes = addWatermark ? _addWatermarkToImage(pngBytes) : pngBytes;
+      // 1. Process according to profile (compression/resize)
+      // Since _processImageForProfile takes a path, we need a version that takes bytes or temporary file.
+      // Let's create a temporary file or modify _processImageForProfile.
       
-      final file = File(p.join(dir.path, '${baseName}_page_$i.png'));
+      final tempDir = Directory.systemTemp;
+      final tempFile = File(p.join(tempDir.path, 'temp_page_$i.png'));
+      await tempFile.writeAsBytes(pngBytes);
+      
+      Uint8List processedBytes = await _processImageForProfile(tempFile.path, profile);
+      
+      // Cleanup temp file
+      if (await tempFile.exists()) await tempFile.delete();
+
+      // 2. Add watermark if requested
+      final finalBytes = addWatermark ? _addWatermarkToImage(processedBytes) : processedBytes;
+      
+      final ext = profile == PdfExportProfile.standard ? 'png' : 'jpg';
+      final file = File(p.join(dir.path, '${baseName}_page_$i.$ext'));
       await file.writeAsBytes(finalBytes);
       imageFiles.add(file);
       i++;

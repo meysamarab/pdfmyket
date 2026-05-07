@@ -28,10 +28,30 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
   Future<void> _handleExport() async {
     final appState = Provider.of<AppState>(context, listen: false);
     
+    if (_selectedProfile != PdfExportProfile.standard && !appState.canUseFeature('adjust')) {
+      SubscriptionDialog.show(context);
+      return;
+    }
+
+    if (_selectedProfile != PdfExportProfile.standard && !appState.canUseFeature('adjust')) {
+      SubscriptionDialog.show(context);
+      return;
+    }
+
     if (_removeWatermark && !appState.canUseFeature('watermark')) {
       SubscriptionDialog.show(context);
       return;
     }
+... (handling rest of the method)
+... (UI changes follow)
+...
+            _buildSectionTitle('خروجی مخصوص بارگذاری (کاهش حجم)', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
+            const SizedBox(height: 16),
+            _buildProfileOption('استاندارد (کیفیت بالا)', 'بدون کاهش حجم اضافی', PdfExportProfile.standard, Icons.high_quality),
+            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance, isPremium: true),
+            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language, isPremium: true),
+            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
+...
 
 
     final hasPermission = await FileStorageService.requestPermissions();
@@ -192,9 +212,9 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
             _buildSectionTitle('خروجی مخصوص بارگذاری (کاهش حجم)', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
             const SizedBox(height: 16),
             _buildProfileOption('استاندارد (کیفیت بالا)', 'بدون کاهش حجم اضافی', PdfExportProfile.standard, Icons.high_quality),
-            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance),
-            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language),
-            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress),
+            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance, isPremium: true),
+            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language, isPremium: true),
+            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
 
             const SizedBox(height: 32),
             _buildSectionTitle('محل ذخیره', 'انتخاب کنید فایل کجا ذخیره شود'),
@@ -263,7 +283,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
     );
   }
 
-  Widget _buildProfileOption(String title, String subtitle, PdfExportProfile profile, IconData icon) {
+  Widget _buildProfileOption(String title, String subtitle, PdfExportProfile profile, IconData icon, {bool isPremium = false}) {
     final isSelected = _selectedProfile == profile;
     return InkWell(
       onTap: () => setState(() => _selectedProfile = profile),
@@ -291,6 +311,7 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
               ),
             ),
             if (isSelected) const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
+            if (!isSelected && isPremium) const Icon(Icons.star, color: Colors.amber, size: 18),
           ],
         ),
       ),
