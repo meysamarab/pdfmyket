@@ -11,7 +11,8 @@ class BillingService {
   /// Connect to Bazaar service
   static Future<bool> init() async {
     try {
-      return await FlutterPoolakey.connect(_rsaKey);
+      await FlutterPoolakey.connect(_rsaKey);
+      return true;
     } catch (e) {
       debugPrint('Poolakey Connection Failed: $e');
       return false;
