@@ -33,26 +33,10 @@ class _ExportOptionsDialogState extends State<ExportOptionsDialog> {
       return;
     }
 
-    if (_selectedProfile != PdfExportProfile.standard && !appState.canUseFeature('adjust')) {
-      SubscriptionDialog.show(context);
-      return;
-    }
-
     if (_removeWatermark && !appState.canUseFeature('watermark')) {
       SubscriptionDialog.show(context);
       return;
     }
-... (handling rest of the method)
-... (UI changes follow)
-...
-            _buildSectionTitle('خروجی مخصوص بارگذاری (کاهش حجم)', 'بهینه‌سازی فایل برای سامانه‌های مختلف'),
-            const SizedBox(height: 16),
-            _buildProfileOption('استاندارد (کیفیت بالا)', 'بدون کاهش حجم اضافی', PdfExportProfile.standard, Icons.high_quality),
-            _buildProfileOption('وب‌سایت‌های دولتی', 'حجم زیر 2 مگابایت', PdfExportProfile.government, Icons.account_balance, isPremium: true),
-            _buildProfileOption('سفارت‌ها', 'حجم زیر 2.5 مگابایت', PdfExportProfile.embassy, Icons.language, isPremium: true),
-            _buildProfileOption('حداکثر کاهش حجم', 'حجم زیر 1 مگابایت', PdfExportProfile.maxCompression, Icons.compress, isPremium: true),
-...
-
 
     final hasPermission = await FileStorageService.requestPermissions();
     if (!hasPermission && mounted) {

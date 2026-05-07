@@ -7,6 +7,7 @@ import '../../services/pdf_service.dart';
 import '../../services/app_state.dart';
 import '../../models/file_item.dart';
 import '../common/processing_screen.dart';
+import '../common/subscription_dialog.dart';
 import '../result/result_screen.dart';
 
 class SelectPagesScreen extends StatefulWidget {
