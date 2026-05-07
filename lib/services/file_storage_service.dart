@@ -5,7 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../models/file_item.dart';
 
 class FileStorageService {
-  static const String _folderName = 'CCPdf';
+  static const String _folderName = 'CCScaner'; // Name of subfolder in Download
 
   /// Request necessary permissions including Manage External Storage for root access
   static Future<bool> requestPermissions() async {
@@ -36,11 +36,11 @@ class FileStorageService {
     Directory? baseDir;
     
     if (Platform.isAndroid) {
-      // This path is the "Root" of the internal storage accessible by user
-      baseDir = Directory('/storage/emulated/0');
+      // Direct access to Public Download folder
+      baseDir = Directory('/storage/emulated/0/Download');
       
-      // Verify if we can write to it, otherwise fallback
       if (!await baseDir.exists()) {
+        // Fallback for some devices/versions
         final extDir = await getExternalStorageDirectory();
         baseDir = extDir;
       }
