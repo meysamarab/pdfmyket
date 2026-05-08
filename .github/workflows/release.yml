@@ -33,13 +33,6 @@ jobs:
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
           fi
 
-      - name: Create key.properties
-        run: |
-          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'password123' }}" > android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD || 'password123' }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS || 'upload' }}" >> android/key.properties
-          echo "storeFile=upload-keystore.jks" >> android/key.properties
-
       - name: Get dependencies
         run: flutter pub get
 
