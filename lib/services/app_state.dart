@@ -49,6 +49,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    _isPremium = prefs.getBool(BillingService.premiumCacheKey) ?? false;
     _watermarkTrialUsed = prefs.getBool('watermarkTrialUsed') ?? false;
     _mergeTrialUsed = prefs.getBool('mergeTrialUsed') ?? false;
     _adjustTrialUsed = prefs.getBool('adjustTrialUsed') ?? false;
