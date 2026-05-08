@@ -1,4 +1,4 @@
-import 'package:flutter_poolakey/flutter_poolakey.dart';
+import 'package:myket_iap/myket_iap.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
@@ -8,13 +8,13 @@ class BillingService {
   static const String productId = 'ccpooli';
   static const String premiumCacheKey = 'is_premium';
 
-  /// Connect to Bazaar service
+  /// Connect to Myket service
   static Future<bool> init() async {
     try {
-      await FlutterPoolakey.connect(_rsaKey);
-      return true;
+      final result = await MyketIAP.init(rsaKey: _rsaKey);
+      return result.isSuccess();
     } catch (e) {
-      debugPrint('Poolakey Connection Failed: $e');
+      debugPrint('Myket Connection Failed: $e');
       return false;
     }
   }
@@ -28,29 +28,35 @@ class BillingService {
     if (isCached) return true;
 
     try {
-      // 2. Verify with Bazaar API - one-time purchase
-      // We only do this if cache is false
-      final purchases = await FlutterPoolakey.getAllPurchasedProducts();
-      bool active = purchases.any((p) => p.productId == productId);
+      // 2. Verify with Myket API - query inventory
+      final result = await MyketIAP.queryInventory(querySkuDetails: true);
+      final IabResult iabResult = result[MyketIAP.RESULT];
+      
+      if (iabResult.isSuccess()) {
+        final Inventory inventory = result[MyketIAP.INVENTORY];
+        bool active = inventory.hasPurchase(productId);
 
-      // 3. Update cache only if we found a purchase
-      if (active) {
-        await prefs.setBool(premiumCacheKey, true);
+        // 3. Update cache only if we found a purchase
+        if (active) {
+          await prefs.setBool(premiumCacheKey, true);
+        }
+        return active;
       }
-      return active;
+      return isCached;
     } catch (e) {
       debugPrint('Error checking purchases: $e');
-      // If error occurs and we have no cache, we return false
-      // but we don't overwrite any potential existing cache
       return isCached;
     }
   }
 
-  /// Launch one-time purchase flow
+  /// Launch purchase flow
   static Future<bool> purchase() async {
     try {
-      final result = await FlutterPoolakey.purchase(productId);
-      if (result.productId == productId) {
+      final result = await MyketIAP.launchPurchaseFlow(sku: productId);
+      final IabResult iabResult = result[MyketIAP.RESULT];
+      final Purchase? purchase = result[MyketIAP.PURCHASE];
+
+      if (iabResult.isSuccess() && purchase != null && purchase.sku == productId) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(premiumCacheKey, true);
         return true;
