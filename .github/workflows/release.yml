@@ -25,13 +25,17 @@ jobs:
 
       - name: Generate or Decode Keystore
         run: |
+          mkdir -p android/app
           if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "No keystore secret found. Generating a new one for this build..."
-            keytool -genkey -v -keystore android/app/upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname "CN=Meysam Arab, OU=Development, O=CCScaner, L=Tehran, S=Tehran, C=IR" -storepass password123 -keypass password123
+            keytool -genkey -v -keystore android/app/upload-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload -dname "CN=Meysam Arab, OU=Development, O=CCScaner, L=Tehran, S=Tehran, C=IR" -storepass password123 -keypass password123 -noprompt
           else
             echo "Decoding keystore from secrets..."
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
           fi
+
+      - name: List files for debugging
+        run: ls -R android/app
 
       - name: Get dependencies
         run: flutter pub get
