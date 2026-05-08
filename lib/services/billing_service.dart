@@ -12,7 +12,7 @@ class BillingService {
   static Future<bool> init() async {
     try {
       final result = await MyketIAP.init(rsaKey: _rsaKey);
-      return result.isSuccess();
+      return result?.isSuccess() ?? false;
     } catch (e) {
       debugPrint('Myket Connection Failed: $e');
       return false;
@@ -30,11 +30,11 @@ class BillingService {
     try {
       // 2. Verify with Myket API - query inventory
       final result = await MyketIAP.queryInventory(querySkuDetails: true);
-      final IabResult iabResult = result[MyketIAP.RESULT];
+      final IabResult? iabResult = result[MyketIAP.RESULT];
       
-      if (iabResult.isSuccess()) {
-        final Inventory inventory = result[MyketIAP.INVENTORY];
-        bool active = inventory.hasPurchase(productId);
+      if (iabResult != null && iabResult.isSuccess()) {
+        final Inventory? inventory = result[MyketIAP.INVENTORY];
+        bool active = inventory?.hasPurchase(productId) ?? false;
 
         // 3. Update cache only if we found a purchase
         if (active) {
@@ -53,10 +53,10 @@ class BillingService {
   static Future<bool> purchase() async {
     try {
       final result = await MyketIAP.launchPurchaseFlow(sku: productId);
-      final IabResult iabResult = result[MyketIAP.RESULT];
+      final IabResult? iabResult = result[MyketIAP.RESULT];
       final Purchase? purchase = result[MyketIAP.PURCHASE];
 
-      if (iabResult.isSuccess() && purchase != null && purchase.sku == productId) {
+      if (iabResult != null && iabResult.isSuccess() && purchase != null && purchase.sku == productId) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(premiumCacheKey, true);
         return true;

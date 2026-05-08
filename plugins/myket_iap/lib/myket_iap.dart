@@ -6,6 +6,10 @@ import 'package:myket_iap/util/iab_result.dart';
 import 'package:myket_iap/util/inventory.dart';
 import 'package:myket_iap/util/purchase.dart';
 
+export 'package:myket_iap/util/iab_result.dart';
+export 'package:myket_iap/util/inventory.dart';
+export 'package:myket_iap/util/purchase.dart';
+
 class MyketIAP {
   static const String PURCHASE = "purchase";
   static const String INVENTORY = "inventory";
