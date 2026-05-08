@@ -46,7 +46,8 @@ dependencies:
   permission_handler: ^11.3.1
   printing: ^5.13.2
   image: ^4.2.0
-  myket_iap: ^1.1.10
+  myket_iap:
+    path: ./plugins/myket_iap
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
