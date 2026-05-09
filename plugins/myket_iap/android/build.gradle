@@ -42,7 +42,7 @@ android {
         disable 'InvalidPackage'
     }
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(17)
     }
 }
 
