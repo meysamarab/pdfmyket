@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter/services.dart';
-import 'package:myket_iap/util/iab_result.dart';
-import 'package:myket_iap/util/inventory.dart';
-import 'package:myket_iap/util/purchase.dart';
+import 'util/iab_result.dart';
+import 'util/inventory.dart';
+import 'util/purchase.dart';
 
-export 'package:myket_iap/util/iab_result.dart';
-export 'package:myket_iap/util/inventory.dart';
-export 'package:myket_iap/util/purchase.dart';
+export 'util/iab_result.dart';
+export 'util/inventory.dart';
+export 'util/purchase.dart';
 
 class MyketIAP {
   static const String PURCHASE = "purchase";
