@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 
 class BillingService {
   static const String _rsaKey =
-      'MIHNMA0GCSqGSIb3DQEBAQUAA4G7ADCBtwKBrwCwF6NWqIntwMW0zqFtXmJEg3brmPutlValzeQLYn1PKf1v3gVY/knsHMlCVzA1a7pS2okclSzbpeq+svD5YFNGovqmkOhU9QrbCOUBNv/Qjj4xssBpFKTYCyO4qiBrpiRHkRa5ifF/m5gfxV4qmu+3lQo1mq+jqcCYPWRVIKguV+Hrhg9n9CPEKQm+qC4jrvdaQvth7xZQcfmJfma627vC2CNhlVzocsV/TJbiyvkCAwEAAQ==';
-  static const String productId = 'ccpooli';
+      'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDbXHYP5GNWBHsqE+OfhoYSLP4E1QhivbC+sbuP6iqodRD6NI3Tt1jQRZ2Fc1SwIhBVI4/fpmwW0c1GB8MtvEU3BWZGvV73vcjkpmL27HccCR4ChyCyPcPo6TJJWhHC9VP4mX+TjcoKMCHlh9ELFokKTUM3bYwQmk3NA69l4BJWiQIDAQAB';
+  static const String productId = 'ccpoooli';
   static const String premiumCacheKey = 'is_premium';
 
   /// Connect to Myket service

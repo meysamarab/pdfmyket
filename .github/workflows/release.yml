@@ -51,3 +51,9 @@ jobs:
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: upload-keystore
+          path: android/app/upload-keystore.jks
