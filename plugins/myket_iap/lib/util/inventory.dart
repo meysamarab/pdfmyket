@@ -20,6 +20,12 @@ class Inventory {
         'mSkuMap': mSkuMap,
       };
 
+  bool hasPurchase(String sku) => mPurchaseMap.containsKey(sku);
+
+  Purchase? getPurchase(String sku) => mPurchaseMap[sku];
+
+  List<Purchase> getAllPurchases() => mPurchaseMap.values.toList();
+
   @override
   String toString() {
     return 'Inventory{mPurchaseMap: $mPurchaseMap, mSkuMap: $mSkuMap}';

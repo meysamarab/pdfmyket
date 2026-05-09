@@ -10,6 +10,8 @@ class Purchase {
   late String mOriginalJson;
   late String mSignature;
 
+  String get sku => mSku;
+
   factory Purchase.fromJson(dynamic json) => Purchase()
     ..mItemType = json['mItemType']
     ..mOrderId = json['mOrderId']

@@ -7,6 +7,8 @@ class SkuDetails {
   String? mDescription;
   late String mJson;
 
+  String get sku => mSku;
+
   SkuDetails();
 
   factory SkuDetails.fromJson(dynamic json) => SkuDetails()
